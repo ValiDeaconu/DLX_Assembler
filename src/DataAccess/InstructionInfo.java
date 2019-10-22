@@ -1,10 +1,15 @@
 package DataAccess;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class InstructionInfo {
+public class InstructionInfo implements Comparable<InstructionInfo> {
+    public static final String COMMENT_INSTRUCTION_STRING_NAME = "COMMENT";
+    public static final InstructionName  COMMENT_INSTRUCTION_NAME = InstructionName.COMMENT;
+
     public final String name;
     public final int opcode;
     public final int func;
@@ -39,6 +44,11 @@ public class InstructionInfo {
     @Override
     public int hashCode() {
         return Objects.hash(name, opcode, func, type, safeDepth);
+    }
+
+    @Override
+    public int compareTo(InstructionInfo other) {
+        return name.compareTo(other.name);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -408,4 +418,5 @@ public class InstructionInfo {
 
         return map;
     }
+
 }

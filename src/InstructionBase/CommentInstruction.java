@@ -1,5 +1,7 @@
 package InstructionBase;
 
+import DataAccess.InstructionInfo;
+
 import OperandBase.OperandAbstract;
 import OperandBase.RegisterOperand;
 
@@ -9,7 +11,7 @@ public class CommentInstruction extends InstructionAbstract {
     private String content;
 
     public CommentInstruction(String content) {
-        super(InstructionName.COMMENT, null, 0);
+        super(InstructionInfo.COMMENT_INSTRUCTION_STRING_NAME, null);
         this.content = content;
     }
 
@@ -32,9 +34,7 @@ public class CommentInstruction extends InstructionAbstract {
         throw new IllegalCallerException("Comments does not have operands");
     }
 
-    /**
-     * Comments should not be converted in binary code
-     **/
+    /** Comments should not be converted in binary code */
     @Override
     public String convertToBinaryCode() {
         return "";

@@ -2,16 +2,19 @@ package InstructionBase;
 
 import DataAccess.InstructionInfo;
 
+import DataAccess.InstructionName;
 import OperandBase.OperandAbstract;
 import OperandBase.RegisterOperand;
 
 public class BinaryInstruction extends InstructionAbstract {
 
-    public BinaryInstruction(InstructionInfo instructionInfo,
-                             RegisterOperand destination,
-                             OperandAbstract operand,
-                             int safeDepth) {
-        super(instructionInfo, destination, safeDepth);
+    public BinaryInstruction(String instructionName, RegisterOperand destination, OperandAbstract operand) {
+        super(instructionName, destination);
+        this.operands.add(operand);
+    }
+
+    public BinaryInstruction(InstructionName instructionName, RegisterOperand destination, OperandAbstract operand) {
+        super(instructionName, destination);
         this.operands.add(operand);
     }
 

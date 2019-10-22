@@ -1,6 +1,8 @@
 package InstructionBase;
 
 import DataAccess.InstructionInfo;
+import DataAccess.InstructionName;
+
 import OperandBase.OperandAbstract;
 import OperandBase.RegisterOperand;
 
@@ -13,17 +15,16 @@ public abstract class InstructionAbstract implements Comparable<InstructionAbstr
     private RegisterOperand dest;
     protected List<OperandAbstract> operands;
 
-    private int safeDepth;
-
-    public InstructionAbstract(InstructionInfo instructionInfo, RegisterOperand dest, int safeDepth) {
-        this.instructionInfo = instructionInfo;
+    public InstructionAbstract(String instructionName, RegisterOperand dest) {
+        this.instructionInfo = InstructionInfo.getInstruction(instructionName);
         this.dest = dest;
         this.operands = new ArrayList<OperandAbstract>();
+    }
 
-        if (safeDepth < 0)
-            throw new IllegalArgumentException("safeDepth cannot be negative");
-
-        this.safeDepth = safeDepth;
+    public InstructionAbstract(InstructionName instructionName, RegisterOperand dest) {
+        this.instructionInfo = InstructionInfo.getInstruction(instructionName);
+        this.dest = dest;
+        this.operands = new ArrayList<OperandAbstract>();
     }
 
     public abstract String convertToBinaryCode();
@@ -32,35 +33,34 @@ public abstract class InstructionAbstract implements Comparable<InstructionAbstr
         return instructionInfo;
     }
 
-    public int getSafeDepth() {
-        return safeDepth;
+    public RegisterOperand getDestination() {
+        return dest;
     }
-
-    public RegisterOperand getDestination() { return dest; }
 
     public List<OperandAbstract> getOperandsAsList() {
         return operands;
     }
 
-    public OperandAbstract getSource() { return operands.get(0); }
+    public OperandAbstract getSource() {
+        return operands.get(0);
+    }
 
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         InstructionAbstract other = (InstructionAbstract) obj;
-        return safeDepth == other.safeDepth &&
-                instructionInfo == other.instructionInfo &&
+        return instructionInfo == other.instructionInfo &&
                 Objects.equals(operands, other.operands);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(instructionInfo, operands, safeDepth);
+        return Objects.hash(instructionInfo, operands);
     }
 
     @Override
     public int compareTo(InstructionAbstract other) {
-        return Integer.compare(safeDepth, other.safeDepth);
+        return instructionInfo.compareTo(other.instructionInfo);
     }
 }
