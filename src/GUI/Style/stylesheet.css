@@ -1,0 +1,61 @@
+.button{
+    -fx-background-color: none;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+}
+
+.button:hover {
+    -fx-background-color: #212438;
+    -fx-border-color: #212438;
+    -fx-text-fill: #ffffff;
+    -fx-cursor: hand;
+}
+
+.split-pane:vertical .split-pane-divider, AnchorPane, .menu-bar .container, .menu-bar {
+    -fx-background-color: #344e69;
+}
+
+.menu-bar .container .menu:openvertically .label .text {
+    -fx-fill: #ffffff;
+}
+
+.context-menu {
+  -fx-background-color: #212438;
+  -fx-text-fill: #ffffff
+}
+
+.menu-item .label {
+  -fx-text-fill: #ffffff
+}
+
+.menu-item:focused .label {
+  -fx-text-fill: #ffffff
+}
+
+.text-area {
+    -fx-background-color: none;
+    -fx-text-fill: #bbbbbb;
+}
+
+.text-area .scroll-pane {
+    -fx-background-color: transparent;
+}
+
+.text-area .scroll-pane .viewport{
+    -fx-background-color: transparent;
+}
+
+
+.text-area .scroll-pane .content{
+    -fx-background-color: transparent;
+}
+
+#editor {
+    -fx-background-color: #243547;
+    -fx-text-fill: #ffff73;
+}
+
+#logView {
+    -fx-background-color: #000000;
+    -fx-text-fill: #ffffff;
+}
