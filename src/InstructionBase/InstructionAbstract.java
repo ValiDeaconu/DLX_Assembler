@@ -1,20 +1,24 @@
 package InstructionBase;
 
+import DataAccess.InstructionInfo;
 import OperandBase.OperandAbstract;
+import OperandBase.RegisterOperand;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public abstract class InstructionAbstract implements Comparable<InstructionAbstract> {
-    private InstructionType type;
-    private InstructionName name;
+    private InstructionInfo instructionInfo;
+    private RegisterOperand dest;
     protected List<OperandAbstract> operands;
 
     private int safeDepth;
 
-    public InstructionAbstract(InstructionName name, int safeDepth) {
-        this.name = name;
-        this.type = generateInsturctionType(name);
+    public InstructionAbstract(InstructionInfo instructionInfo, RegisterOperand dest, int safeDepth) {
+        this.instructionInfo = instructionInfo;
+        this.dest = dest;
+        this.operands = new ArrayList<OperandAbstract>();
 
         if (safeDepth < 0)
             throw new IllegalArgumentException("safeDepth cannot be negative");
@@ -24,26 +28,21 @@ public abstract class InstructionAbstract implements Comparable<InstructionAbstr
 
     public abstract String convertToBinaryCode();
 
-    private InstructionType generateInsturctionType(InstructionName name) {
-        // TODO: Complete this switch when InstructionName enum is complete
-        return InstructionType.R_TYPE;
-    }
-
-    public InstructionType getInstructionType() {
-        return type;
-    }
-
-    public InstructionName getInstructionName() {
-        return name;
+    public InstructionInfo getInstructionInfo() {
+        return instructionInfo;
     }
 
     public int getSafeDepth() {
         return safeDepth;
     }
 
+    public RegisterOperand getDestination() { return dest; }
+
     public List<OperandAbstract> getOperandsAsList() {
         return operands;
     }
+
+    public OperandAbstract getSource() { return operands.get(0); }
 
     @Override
     public boolean equals(Object obj) {
@@ -51,14 +50,13 @@ public abstract class InstructionAbstract implements Comparable<InstructionAbstr
         if (obj == null || getClass() != obj.getClass()) return false;
         InstructionAbstract other = (InstructionAbstract) obj;
         return safeDepth == other.safeDepth &&
-                type == other.type &&
-                name == other.name &&
+                instructionInfo == other.instructionInfo &&
                 Objects.equals(operands, other.operands);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, name, operands, safeDepth);
+        return Objects.hash(instructionInfo, operands, safeDepth);
     }
 
     @Override

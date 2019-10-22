@@ -1,25 +1,27 @@
 package InstructionBase;
 
+import DataAccess.InstructionInfo;
+
 import OperandBase.OperandAbstract;
+import OperandBase.RegisterOperand;
 
 public class BinaryInstruction extends InstructionAbstract {
 
-    public BinaryInstruction(InstructionName name, int safeDepth, OperandAbstract leftOperand, OperandAbstract rightOperand) {
-        super(name, safeDepth);
-        this.operands.add(leftOperand);
-        this.operands.add(rightOperand);
+    public BinaryInstruction(InstructionInfo instructionInfo,
+                             RegisterOperand destination,
+                             OperandAbstract operand,
+                             int safeDepth) {
+        super(instructionInfo, destination, safeDepth);
+        this.operands.add(operand);
     }
 
-    public OperandAbstract getLeftOperand() {
+    public OperandAbstract getOperand() {
         return this.operands.get(0);
     }
-    public OperandAbstract getRightOperand() { return this.operands.get(1); }
 
     @Override
     public String toString() {
-        return this.getInstructionName().toString() + " " +
-                this.getLeftOperand().toString() + ", " +
-                this.getRightOperand().toString();
+        return this.getInstructionInfo().toString() + " " + this.getDestination() + ", " + this.getOperand();
     }
 
     @Override
