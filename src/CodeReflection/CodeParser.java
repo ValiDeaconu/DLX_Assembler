@@ -39,6 +39,7 @@ public class CodeParser implements Runnable {
     @Override
     public void run() {
         state = CodeParserState.WORKING;
+        instructionList = new InstructionList();
         if (parse(codeBlock)) {
             state = CodeParserState.SUCCEEDED;
         } else {
@@ -56,6 +57,8 @@ public class CodeParser implements Runnable {
             if (returnInfo.errors.size() > 0) {
                 return false;
             }
+
+            instructionList.add(returnInfo.instruction);
         }
 
         return true;
@@ -64,6 +67,11 @@ public class CodeParser implements Runnable {
     // TODO: Announce all observers that CodeParser catched an error
     private void notifyError(String message, int lineIndex) {
         System.out.println("Error found: " + message + ", at line=" + lineIndex);
+    }
+
+    // TODO: Announce all observers that CodeParser found a comment
+    private void notifyComment(String comment, int lineIndex) {
+        System.out.println("Comment found: " + comment + ", at line=" + lineIndex);
     }
 
     private ReturnInfo<LineParserMessages> parseLine(String line, int lineIndex) {
@@ -83,9 +91,10 @@ public class CodeParser implements Runnable {
         InstructionType type = instructionInfo.getInstructionType();
 
         if (command.startsWith(";")) {
-
+            notifyComment(command.substring(1), lineIndex);
         } else {
-            String[] operands = terms[1].split(",");
+            String compressed = compressString(terms[1]);
+            String[] operands = compressed.split(",");
 
             switch (operands.length) {
                 case 0: {
@@ -96,6 +105,10 @@ public class CodeParser implements Runnable {
                 case 1: {
                     // unary instruction
                     ReturnInfo<TermParserMessages> returnInfo = parseTerms(operands[0]);
+
+                    if (returnInfo.commentOperand != null) {
+                        notifyComment(returnInfo.commentOperand.getValue(), lineIndex);
+                    }
 
                     if (returnInfo.errors.size() > 0) {
                         ret.addError(LineParserErrors.INVALID_SYNTAX);
@@ -119,6 +132,14 @@ public class CodeParser implements Runnable {
                     // binary instruction
                     ReturnInfo<TermParserMessages> returnInfoOp1 = parseTerms(operands[0]);
                     ReturnInfo<TermParserMessages> returnInfoOp2 = parseTerms(operands[1]);
+
+                    if (returnInfoOp1.commentOperand != null) {
+                        notifyComment(returnInfoOp2.commentOperand.getValue(), lineIndex);
+                    }
+
+                    if (returnInfoOp2.commentOperand != null) {
+                        notifyComment(returnInfoOp2.commentOperand.getValue(), lineIndex);
+                    }
 
                     if (returnInfoOp1.errors.size() > 0 || returnInfoOp2.errors.size() > 0) {
                         ret.addError(LineParserErrors.INVALID_SYNTAX);
@@ -144,6 +165,18 @@ public class CodeParser implements Runnable {
                     ReturnInfo<TermParserMessages> returnInfoOp2 = parseTerms(operands[1]);
                     ReturnInfo<TermParserMessages> returnInfoOp3 = parseTerms(operands[1]);
 
+                    if (returnInfoOp1.commentOperand != null) {
+                        notifyComment(returnInfoOp2.commentOperand.getValue(), lineIndex);
+                    }
+
+                    if (returnInfoOp2.commentOperand != null) {
+                        notifyComment(returnInfoOp2.commentOperand.getValue(), lineIndex);
+                    }
+
+                    if (returnInfoOp3.commentOperand != null) {
+                        notifyComment(returnInfoOp3.commentOperand.getValue(), lineIndex);
+                    }
+
                     if (returnInfoOp1.errors.size() > 0 || returnInfoOp2.errors.size() > 0 || returnInfoOp3.errors.size() > 0) {
                         ret.addError(LineParserErrors.INVALID_SYNTAX);
                         notifyError(LineParserErrors.INVALID_SYNTAX, lineIndex);
@@ -154,7 +187,7 @@ public class CodeParser implements Runnable {
 
                     if (InstructionType.testInstruction(instruction, type)) {
                         ret.instruction = instruction;
-                        ret.addMessage(LineParserMessages.BINSTR);
+                        ret.addMessage(LineParserMessages.TINSTR);
                     } else {
                         ret.addError(LineParserErrors.INVALID_SYNTAX);
                         notifyError(LineParserErrors.INVALID_SYNTAX, lineIndex);
@@ -265,9 +298,7 @@ public class CodeParser implements Runnable {
         return ret;
     }
 
-    /**
-     * HELPER CLASSES AND METHODS
-     */
+    // HELPER CLASS AND METHODS
 
     private enum LineParserMessages {
         UINSTR, BINSTR, TINSTR
