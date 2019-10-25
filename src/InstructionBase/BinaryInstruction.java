@@ -8,12 +8,12 @@ import OperandBase.RegisterOperand;
 
 public class BinaryInstruction extends InstructionAbstract {
 
-    public BinaryInstruction(String instructionName, RegisterOperand destination, OperandAbstract operand) {
+    public BinaryInstruction(String instructionName, OperandAbstract destination, OperandAbstract operand) {
         super(instructionName, destination);
         this.operands.add(operand);
     }
 
-    public BinaryInstruction(InstructionName instructionName, RegisterOperand destination, OperandAbstract operand) {
+    public BinaryInstruction(InstructionName instructionName, OperandAbstract destination, OperandAbstract operand) {
         super(instructionName, destination);
         this.operands.add(operand);
     }

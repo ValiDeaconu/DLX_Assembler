@@ -12,16 +12,16 @@ import java.util.Objects;
 
 public abstract class InstructionAbstract implements Comparable<InstructionAbstract> {
     private InstructionInfo instructionInfo;
-    private RegisterOperand dest;
+    private OperandAbstract dest;
     protected List<OperandAbstract> operands;
 
-    public InstructionAbstract(String instructionName, RegisterOperand dest) {
+    public InstructionAbstract(String instructionName, OperandAbstract dest) {
         this.instructionInfo = InstructionInfo.getInstruction(instructionName);
         this.dest = dest;
         this.operands = new ArrayList<OperandAbstract>();
     }
 
-    public InstructionAbstract(InstructionName instructionName, RegisterOperand dest) {
+    public InstructionAbstract(InstructionName instructionName, OperandAbstract dest) {
         this.instructionInfo = InstructionInfo.getInstruction(instructionName);
         this.dest = dest;
         this.operands = new ArrayList<OperandAbstract>();
@@ -33,7 +33,7 @@ public abstract class InstructionAbstract implements Comparable<InstructionAbstr
         return instructionInfo;
     }
 
-    public RegisterOperand getDestination() {
+    public OperandAbstract getDestination() {
         return dest;
     }
 
@@ -43,6 +43,10 @@ public abstract class InstructionAbstract implements Comparable<InstructionAbstr
 
     public OperandAbstract getSource() {
         return operands.get(0);
+    }
+
+    public int getParametersNumber() {
+        return (dest != null) ? operands.size() + 1 : operands.size();
     }
 
     @Override

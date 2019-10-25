@@ -3,17 +3,29 @@ package OperandBase;
 import java.util.Objects;
 
 public class RegisterOperand extends OperandAbstract<Integer> implements Comparable<RegisterOperand> {
-    private RegisterType registerType;
     private int registerIndex;
+    private RegisterType registerType;
 
-    public RegisterOperand(RegisterType registerType, int registerIndex) {
-        super(OperandType.REGISTER);
-        this.registerType = registerType;
+    public RegisterOperand(OperandType registerType, int registerIndex) {
+        super(registerType);
         this.registerIndex = registerIndex;
+
+        switch (registerType) {
+            case INTEGER_REGISTER:
+                this.registerType = RegisterType.INTEGER;
+                break;
+            case FLOAT_REGISTER:
+                this.registerType = RegisterType.FLOAT;
+                break;
+            case DOUBLE_REGISTER:
+                this.registerType = RegisterType.DOUBLE;
+                break;
+            default:
+                throw new IllegalArgumentException("OperandType is not specifying a register type");
+        }
     }
 
-    public RegisterType getRegisterType()
-    {
+    public RegisterType getRegisterType() {
         return registerType;
     }
 

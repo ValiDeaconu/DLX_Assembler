@@ -24,6 +24,26 @@ public class InstructionInfo implements Comparable<InstructionInfo> {
         this.safeDepth = safeDepth;
     }
 
+    public String getInstructionName() {
+        return name;
+    }
+
+    public int getOperationCode() {
+        return opcode;
+    }
+
+    public int getFunctionCode() {
+        return func;
+    }
+
+    public InstructionType getInstructionType() {
+        return type;
+    }
+
+    public int getSafeDepth() {
+        return safeDepth;
+    }
+
     @Override
     public String toString() {
         return name;

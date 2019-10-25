@@ -10,11 +10,11 @@ import java.util.List;
 
 public class UnaryInstruction extends InstructionAbstract {
 
-    public UnaryInstruction(String instructionName, RegisterOperand destination) {
+    public UnaryInstruction(String instructionName, OperandAbstract destination) {
         super(instructionName, destination);
     }
 
-    public UnaryInstruction(InstructionName instructionName, RegisterOperand destination) {
+    public UnaryInstruction(InstructionName instructionName, OperandAbstract destination) {
         super(instructionName, destination);
     }
 

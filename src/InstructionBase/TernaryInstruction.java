@@ -8,13 +8,13 @@ import OperandBase.RegisterOperand;
 
 public class TernaryInstruction extends InstructionAbstract {
 
-    public TernaryInstruction(String instructionName, RegisterOperand dest, OperandAbstract leftOperand, OperandAbstract rightOperand) {
+    public TernaryInstruction(String instructionName, OperandAbstract dest, OperandAbstract leftOperand, OperandAbstract rightOperand) {
         super(instructionName, dest);
         this.operands.add(leftOperand);
         this.operands.add(rightOperand);
     }
 
-    public TernaryInstruction(InstructionName instructionName, RegisterOperand dest, OperandAbstract leftOperand, OperandAbstract rightOperand) {
+    public TernaryInstruction(InstructionName instructionName, OperandAbstract dest, OperandAbstract leftOperand, OperandAbstract rightOperand) {
         super(instructionName, dest);
         this.operands.add(leftOperand);
         this.operands.add(rightOperand);
