@@ -1,22 +1,29 @@
 package CodeReflection;
 
+import DataAccess.DataAccessConstants;
 import DataAccess.InstructionInfo;
 import DataAccess.InstructionType;
 import InstructionBase.*;
 import OperandBase.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CodeParser implements Runnable {
     private CodeParserState state;
     private InstructionList instructionList;
     private String codeBlock;
+    private Map<Integer, String> instructionIdRequestLabelMap;
+    private Map<String, Integer> labelToInstructionIdMap;
 
     public CodeParser(String codeBlock) {
         this.codeBlock = codeBlock;
         this.state = CodeParserState.IDLE;
         this.instructionList = null;
+        this.instructionIdRequestLabelMap = null;
+        this.labelToInstructionIdMap = null;
     }
 
     public CodeParserState getState() {
@@ -40,6 +47,8 @@ public class CodeParser implements Runnable {
     public void run() {
         state = CodeParserState.WORKING;
         instructionList = new InstructionList();
+        instructionIdRequestLabelMap = new HashMap<>();
+        labelToInstructionIdMap = new HashMap<>();
         if (parse(codeBlock)) {
             state = CodeParserState.SUCCEEDED;
         } else {
@@ -48,7 +57,7 @@ public class CodeParser implements Runnable {
     }
 
     public boolean parse(String assemblyCode) {
-        String[] lines = assemblyCode.split("\n");
+        String[] lines = assemblyCode.split(DataAccessConstants.INSTRUCTION_SEPARATOR);
         for (int i = 0; i < lines.length; ++i) {
             String line = lines[i];
 
@@ -59,6 +68,33 @@ public class CodeParser implements Runnable {
             }
 
             instructionList.add(returnInfo.instruction);
+        }
+
+        int totalLabelReplaced = 0;
+        // check labels
+        for (Map.Entry<Integer, String> entry : instructionIdRequestLabelMap.entrySet()) {
+            int requesterId = entry.getKey();
+            String requestedLabel = entry.getValue();
+            if (labelToInstructionIdMap.containsKey(requestedLabel)) {
+                int labelPosition = labelToInstructionIdMap.get(requestedLabel);
+
+                boolean status = instructionList.get(requesterId).replaceLabel(labelPosition);
+
+                if (!status) {
+                    notifyError("Wrong label request", requesterId);
+                    return false;
+                } else {
+                    totalLabelReplaced++;
+                }
+            } else {
+                notifyError("Unknown label (\"" + requestedLabel + "\")", requesterId);
+                return false;
+            }
+        }
+
+        if (totalLabelReplaced != instructionIdRequestLabelMap.entrySet().size()) {
+            notifyError("Not all labels were replaced", 0);
+            return false;
         }
 
         return true;
@@ -77,8 +113,51 @@ public class CodeParser implements Runnable {
     private ReturnInfo<LineParserMessages> parseLine(String line, int lineIndex) {
         ReturnInfo<LineParserMessages> ret = new ReturnInfo<>();
 
-        String[] terms = line.split(" ");
-        String command = terms[0];
+        String[] terms = line.split(DataAccessConstants.INSTRUCTION_NAME_SEPARATOR);
+
+        String aux = terms[0];
+        String command;
+        String[] operands;
+
+
+        if (aux.contains(DataAccessConstants.LABEL_SEPARATOR)) {
+            String label;
+            // there are 2 cases: label:instr and label: instr
+            if (aux.endsWith(DataAccessConstants.LABEL_SEPARATOR)) {
+                // label: instr, it means terms[1] = instructionName, terms[2] = operands
+                label = aux.substring(0, aux.length() - 1);
+                command = terms[1];
+
+                String rest = terms[2];
+                for (int i = 3; i < terms.length; ++i)
+                    rest = rest + terms[i];
+
+                String compressed = compressString(rest);
+                operands = compressed.split(DataAccessConstants.OPERAND_SEPARATOR);
+            } else {
+                // label:instr
+                String[] temp = terms[0].split(DataAccessConstants.LABEL_SEPARATOR);
+                label = temp[0];
+                command = temp[1];
+
+                String rest = terms[1];
+                for (int i = 2; i < terms.length; ++i)
+                    rest = rest + terms[i];
+                String compressed = compressString(rest);
+                operands = compressed.split(DataAccessConstants.OPERAND_SEPARATOR);
+            }
+
+            labelToInstructionIdMap.put(label, lineIndex);
+        } else {
+            // no label, it means terms[0] = instructionName, terms[2] = operands
+            command = terms[0];
+
+            String rest = terms[1];
+            for (int i = 2; i < terms.length; ++i)
+                rest = rest + terms[i];
+            String compressed = compressString(rest);
+            operands = compressed.split(DataAccessConstants.OPERAND_SEPARATOR);
+        }
 
         InstructionInfo instructionInfo = InstructionInfo.getInstruction(command);
 
@@ -90,12 +169,9 @@ public class CodeParser implements Runnable {
 
         InstructionType type = instructionInfo.getInstructionType();
 
-        if (command.startsWith(";")) {
+        if (command.startsWith(DataAccessConstants.COMMENT_SEPARATOR)) {
             notifyComment(command.substring(1), lineIndex);
         } else {
-            String compressed = compressString(terms[1]);
-            String[] operands = compressed.split(",");
-
             switch (operands.length) {
                 case 0: {
                     ret.addError(LineParserErrors.TOO_LITTLE_PARAMS);
@@ -114,6 +190,10 @@ public class CodeParser implements Runnable {
                         ret.addError(LineParserErrors.INVALID_SYNTAX);
                         notifyError(LineParserErrors.INVALID_SYNTAX, lineIndex);
                         return ret;
+                    }
+
+                    if (returnInfo.messages.contains(TermParserMessages.OPERAND_IS_LABEL)) {
+                        instructionIdRequestLabelMap.put(lineIndex, ((LabelOperand) returnInfo.operand).getValue());
                     }
 
                     UnaryInstruction instruction = new UnaryInstruction(command, returnInfo.operand);
@@ -147,6 +227,12 @@ public class CodeParser implements Runnable {
                         return ret;
                     }
 
+                    if (returnInfoOp1.messages.contains(TermParserMessages.OPERAND_IS_LABEL)) {
+                        instructionIdRequestLabelMap.put(lineIndex, ((LabelOperand) returnInfoOp1.operand).getValue());
+                    } else if (returnInfoOp2.messages.contains(TermParserMessages.OPERAND_IS_LABEL)) {
+                        instructionIdRequestLabelMap.put(lineIndex, ((LabelOperand) returnInfoOp2.operand).getValue());
+                    }
+
                     BinaryInstruction instruction = new BinaryInstruction(command, returnInfoOp1.operand, returnInfoOp2.operand);
 
                     if (InstructionType.testInstruction(instruction, type)) {
@@ -163,7 +249,7 @@ public class CodeParser implements Runnable {
                     // ternary instruction
                     ReturnInfo<TermParserMessages> returnInfoOp1 = parseTerms(operands[0]);
                     ReturnInfo<TermParserMessages> returnInfoOp2 = parseTerms(operands[1]);
-                    ReturnInfo<TermParserMessages> returnInfoOp3 = parseTerms(operands[1]);
+                    ReturnInfo<TermParserMessages> returnInfoOp3 = parseTerms(operands[2]);
 
                     if (returnInfoOp1.commentOperand != null) {
                         notifyComment(returnInfoOp2.commentOperand.getValue(), lineIndex);
@@ -181,6 +267,14 @@ public class CodeParser implements Runnable {
                         ret.addError(LineParserErrors.INVALID_SYNTAX);
                         notifyError(LineParserErrors.INVALID_SYNTAX, lineIndex);
                         return ret;
+                    }
+
+                    if (returnInfoOp1.messages.contains(TermParserMessages.OPERAND_IS_LABEL)) {
+                        instructionIdRequestLabelMap.put(lineIndex, ((LabelOperand) returnInfoOp1.operand).getValue());
+                    } else if (returnInfoOp2.messages.contains(TermParserMessages.OPERAND_IS_LABEL)) {
+                        instructionIdRequestLabelMap.put(lineIndex, ((LabelOperand) returnInfoOp2.operand).getValue());
+                    } else if (returnInfoOp3.messages.contains(TermParserMessages.OPERAND_IS_LABEL)) {
+                        instructionIdRequestLabelMap.put(lineIndex, ((LabelOperand) returnInfoOp3.operand).getValue());
                     }
 
                     TernaryInstruction instruction = new TernaryInstruction(command, returnInfoOp1.operand, returnInfoOp2.operand, returnInfoOp3.operand);
@@ -214,25 +308,29 @@ public class CodeParser implements Runnable {
 
         String operandStr = term;
 
-        if (term.contains(";")) {
-            if (term.startsWith(";")) {
+        if (term.contains(DataAccessConstants.COMMENT_SEPARATOR)) {
+            if (term.startsWith(DataAccessConstants.COMMENT_SEPARATOR)) {
                 CommentOperand operand = new CommentOperand(term.substring(1));
                 ret.addMessage(TermParserMessages.OPERAND_IS_COMMENT);
                 ret.setCommentOperand(operand);
                 return ret;
             } else {
-                String comment = term.substring(term.indexOf(";") + 1);
+                String comment = term.substring(term.indexOf(DataAccessConstants.COMMENT_SEPARATOR) + 1);
 
                 CommentOperand operand = new CommentOperand(comment);
                 ret.setCommentOperand(operand);
                 ret.addMessage(TermParserMessages.OPERAND_IS_COMMENT);
 
-                operandStr = term.substring(0, term.indexOf(";"));
+                operandStr = term.substring(0, term.indexOf(DataAccessConstants.COMMENT_SEPARATOR));
             }
         }
 
-        if (operandStr.startsWith("r") || operandStr.startsWith("f") || operandStr.startsWith("d") ||
-                operandStr.startsWith("R") || operandStr.startsWith("F") || operandStr.startsWith("D")) {
+        if (operandStr.startsWith(DataAccessConstants.IREG_LOWER) ||
+                operandStr.startsWith(DataAccessConstants.FREG_LOWER) ||
+                operandStr.startsWith(DataAccessConstants.DREG_LOWER) ||
+                operandStr.startsWith(DataAccessConstants.IREG_UPPER) ||
+                operandStr.startsWith(DataAccessConstants.FREG_UPPER) ||
+                operandStr.startsWith(DataAccessConstants.DREG_UPPER)) {
             String indexStr = operandStr.substring(1);
             int index;
             try {
@@ -332,8 +430,8 @@ public class CodeParser implements Runnable {
         public ReturnInfo() {
             operand = null;
             commentOperand = null;
-            errors = null;
-            messages = null;
+            errors = new ArrayList<>();
+            messages = new ArrayList<>();
             instruction = null;
         }
 
@@ -346,16 +444,10 @@ public class CodeParser implements Runnable {
         }
 
         public void addError(String error) {
-            if (errors == null)
-                errors = new ArrayList<>();
-
             errors.add(error);
         }
 
         public void addMessage(M message) {
-            if (messages == null)
-                messages = new ArrayList<>();
-
             messages.add(message);
         }
     }

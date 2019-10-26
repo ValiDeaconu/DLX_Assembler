@@ -2,6 +2,7 @@ package InstructionBase;
 
 import DataAccess.InstructionInfo;
 
+import DataAccess.InstructionName;
 import OperandBase.OperandAbstract;
 import OperandBase.RegisterOperand;
 
@@ -11,7 +12,7 @@ public class CommentInstruction extends InstructionAbstract {
     private String content;
 
     public CommentInstruction(String content) {
-        super(InstructionInfo.COMMENT_INSTRUCTION_STRING_NAME, null);
+        super(InstructionName.COMMENT, null);
         this.content = content;
     }
 

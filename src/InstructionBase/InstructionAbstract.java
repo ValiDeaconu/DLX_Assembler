@@ -3,8 +3,10 @@ package InstructionBase;
 import DataAccess.InstructionInfo;
 import DataAccess.InstructionName;
 
+import OperandBase.LabelOperand;
 import OperandBase.OperandAbstract;
 import OperandBase.RegisterOperand;
+import OperandBase.UnsignedIntegerOperand;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +49,24 @@ public abstract class InstructionAbstract implements Comparable<InstructionAbstr
 
     public int getParametersNumber() {
         return (dest != null) ? operands.size() + 1 : operands.size();
+    }
+
+    public boolean replaceLabel(int labelPosition) {
+        if (operands == null) return false;
+        if (dest instanceof LabelOperand) {
+            dest = new UnsignedIntegerOperand(labelPosition);
+            return true;
+        }
+
+        for (int i = 0; i < operands.size(); ++i) {
+            if (operands.get(i) instanceof LabelOperand) {
+                operands.remove(i);
+                operands.add(new UnsignedIntegerOperand(labelPosition));
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Override

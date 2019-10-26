@@ -5,9 +5,6 @@ import java.util.Map;
 import java.util.Objects;
 
 public class InstructionInfo implements Comparable<InstructionInfo> {
-    public static final String COMMENT_INSTRUCTION_STRING_NAME = "COMMENT";
-    public static final InstructionName  COMMENT_INSTRUCTION_NAME = InstructionName.COMMENT;
-
     public final String name;
     public final int opcode;
     public final int func;
@@ -79,6 +76,7 @@ public class InstructionInfo implements Comparable<InstructionInfo> {
     }
 
     public static InstructionInfo getInstruction(String instructionNameString) {
+        instructionNameString = instructionNameString.toUpperCase();
         if (StringToInstructionNameMap.containsKey(instructionNameString)) {
             InstructionName instructionName = StringToInstructionNameMap.get(instructionNameString);
             return getInstruction(instructionName);
@@ -375,7 +373,7 @@ public class InstructionInfo implements Comparable<InstructionInfo> {
         map.put(InstructionName.XORI, 	new InstructionInfo("XORI",	44,	0,	InstructionType.UNIMP,	0));
         map.put(InstructionName.LA, 	new InstructionInfo("LA",	48,	0,	InstructionType.UNIMP,	0));
         map.put(InstructionName.NOP, 	new InstructionInfo("NOP",	0,	0,	InstructionType.UNIMP,	0));
-        map.put(InstructionName.ADD, 	new InstructionInfo("ADD",	0,	1,	InstructionType.UNIMP,	0));
+        map.put(InstructionName.ADD, 	new InstructionInfo("ADD",	0,	1,	InstructionType.REG3IMM,	0));
         map.put(InstructionName.ADDU, 	new InstructionInfo("ADDU",	0,	2,	InstructionType.UNIMP,	0));
         map.put(InstructionName.AND, 	new InstructionInfo("AND",	0,	3,	InstructionType.UNIMP,	0));
         map.put(InstructionName.MOVD, 	new InstructionInfo("MOVD",	0,	4,	InstructionType.UNIMP,	0));
@@ -430,7 +428,7 @@ public class InstructionInfo implements Comparable<InstructionInfo> {
         map.put(InstructionName.NED, 	new InstructionInfo("NED",	1,	26,	InstructionType.UNIMP,	0));
         map.put(InstructionName.NEF, 	new InstructionInfo("NEF",	1,	27,	InstructionType.UNIMP,	0));
         map.put(InstructionName.SUBD, 	new InstructionInfo("SUBD",	1,	28,	InstructionType.UNIMP,	0));
-        map.put(InstructionName.SUBF, 	new InstructionInfo("SUBF",	1,	29,	InstructionType.UNIMP,	0));
+        map.put(InstructionName.SUBF, 	new InstructionInfo("SUBF",	1,	29,	InstructionType.FREG3,	0));
 
         map.put(InstructionName.COMMENT,    new InstructionInfo(";",	0,	0,	InstructionType.UNIMP,	0));
 
