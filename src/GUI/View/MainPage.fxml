@@ -5,26 +5,41 @@
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextArea?>
+<?import javafx.scene.input.KeyCodeCombination?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="800.0" prefWidth="1200.0" stylesheets="@../Style/stylesheet.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GUI.Controller.MainController">
+<BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/10.0.2" xmlns:fx="http://javafx.com/fxml/1">
     <top>
         <MenuBar BorderPane.alignment="CENTER">
             <menus>
                 <Menu mnemonicParsing="false" text="File">
                     <items>
-                        <MenuItem fx:id="openFile" mnemonicParsing="false" onAction="#openFileAction" text="Open" />
-                        <MenuItem fx:id="newFile" mnemonicParsing="false" onAction="#newFileAction" text="New" />
-                        <MenuItem fx:id="saveFile" mnemonicParsing="false" onAction="#saveFileAction" text="Save" />
-                        <MenuItem fx:id="closeFile" mnemonicParsing="false" onAction="#closeFileAction" text="Close" />
+                        <MenuItem fx:id="openFile" onAction="#openFileAction" text="Open">
+                     <accelerator>
+                        <KeyCodeCombination alt="UP" code="O" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                     </accelerator></MenuItem>
+                        <MenuItem fx:id="newFile" onAction="#newFileAction" text="New">
+                     <accelerator>
+                        <KeyCodeCombination alt="UP" code="N" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                     </accelerator></MenuItem>
+                        <MenuItem fx:id="saveFile" onAction="#saveFileAction" text="Save">
+                     <accelerator>
+                        <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                     </accelerator></MenuItem>
+                        <MenuItem fx:id="closeFile" onAction="#closeFileAction" text="Close" />
                     </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="Edit">
                     <items>
-                        <MenuItem fx:id="settings" mnemonicParsing="false" onAction="#settingsAction" text="Settings" />
+                        <MenuItem fx:id="settings" onAction="#settingsAction" text="Settings">
+                     <accelerator>
+                        <KeyCodeCombination alt="DOWN" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                     </accelerator></MenuItem>
                     </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="Help">
@@ -39,12 +54,47 @@
         <SplitPane dividerPositions="0.7" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" BorderPane.alignment="CENTER">
             <items>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
-                    <children>
-                        <TextArea fx:id="editor" layoutX="499.0" layoutY="206.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                     <font>
-                        <Font name="Courier New Bold" size="15.0" />
-                     </font></TextArea>
-                    </children>
+               <children>
+                  <SplitPane dividerPositions="0.5" layoutX="465.0" layoutY="205.0" prefHeight="160.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <items>
+                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                           <children>
+                              <TextArea fx:id="editor" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                 <font>
+                                    <Font name="Courier New Bold" size="15.0" />
+                                 </font>
+                              </TextArea>
+                           </children>
+                        </AnchorPane>
+                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="419.0">
+                           <children>
+                              <TabPane layoutX="185.0" layoutY="166.0" prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                <tabs>
+                                  <Tab text="output.VHDL">
+                                    <content>
+                                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                             <children>
+                                                <TextArea fx:id="vhdlView" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                             </children>
+                                          </AnchorPane>
+                                    </content>
+                                  </Tab>
+                                  <Tab text="Watches">
+                                    <content>
+                                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                             <children>
+                                                <TextArea fx:id="watchesView" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                             </children>
+                                          </AnchorPane>
+                                    </content>
+                                  </Tab>
+                                </tabs>
+                              </TabPane>
+                           </children>
+                        </AnchorPane>
+                    </items>
+                  </SplitPane>
+               </children>
                 </AnchorPane>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                     <children>
@@ -60,16 +110,21 @@
     <left>
         <AnchorPane prefHeight="200.0" prefWidth="50.0" BorderPane.alignment="CENTER">
             <children>
-                <Button fx:id="run" layoutX="-6.0" layoutY="731.0" mnemonicParsing="false" onAction="#runAction" prefHeight="50.0" prefWidth="50.0" style="-fx-text-fill: #218c00;" text="►" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                <Button fx:id="run" disable="true" layoutX="-6.0" layoutY="731.0" mnemonicParsing="false" onAction="#runAction" prefHeight="50.0" prefWidth="50.0" style="-fx-text-fill: #218c00;" text="►" AnchorPane.bottomAnchor="100.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                     <font>
                         <Font size="20.0" />
                     </font>
                 </Button>
-                <Button fx:id="stop" mnemonicParsing="false" onAction="#stopAction" prefHeight="50.0" prefWidth="50.0" style="-fx-text-fill: red;" text=" ■ " AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                <Button fx:id="stop" disable="true" mnemonicParsing="false" onAction="#stopAction" prefHeight="50.0" prefWidth="50.0" style="-fx-text-fill: red;" text=" ■ " AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                     <font>
                         <Font size="15.0" />
                     </font>
                 </Button>
+            <Button fx:id="build" mnemonicParsing="false" onAction="#buildAction" prefHeight="50.0" prefWidth="50.0" style="-fx-text-fill: #218c00;" text="⚒️" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+               <font>
+                  <Font size="21.0" />
+               </font>
+            </Button>
             </children>
         </AnchorPane>
     </left>
