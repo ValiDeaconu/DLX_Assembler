@@ -37,6 +37,11 @@ public class AssemblerManager {
         }
     }
 
+    // TODO: This method should search into the instruction list and creates support for labels
+    public void prepareInstructionList() {
+
+    }
+
     public void launchThreads() {
         // Split instructions, 128 instructions per thread.
         int threadsNeeded = (instructionList.size() >> 7) + 1;
