@@ -203,7 +203,7 @@ public enum InstructionType {
         map.put(InstructionType.IMM1, Arrays.asList(new OperandType[]{
                 OperandType.NUMERIC
         }));
-        map.put(InstructionType.PSEUDO, Arrays.asList(null));
+        map.put(InstructionType.PSEUDO, null);
         map.put(InstructionType.NONEOP, null);
         map.put(InstructionType.FREG2a, Arrays.asList(new OperandType[]{
                 OperandType.FLOAT_REGISTER,
