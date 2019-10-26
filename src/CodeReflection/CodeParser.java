@@ -15,7 +15,7 @@ public class CodeParser implements Runnable {
 
     public CodeParser(String codeBlock) {
         this.codeBlock = codeBlock;
-        this.state = CodeParserState.PAUSE;
+        this.state = CodeParserState.IDLE;
         this.instructionList = null;
     }
 
@@ -25,7 +25,7 @@ public class CodeParser implements Runnable {
 
     public InstructionList getInstructionList() {
         switch (state) {
-            case PAUSE:
+            case IDLE:
             case SUCCEEDED:
                 return instructionList;
             case WORKING:

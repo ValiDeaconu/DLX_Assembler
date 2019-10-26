@@ -1,7 +1,7 @@
 package CodeReflection;
 
 public enum CodeParserState {
-    PAUSE,
+    IDLE,
     SUCCEEDED,
     WORKING,
     FAILED
