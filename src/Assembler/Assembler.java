@@ -39,6 +39,11 @@ public class Assembler implements Runnable {
         return generatedInstructionList;
     }
 
+    public void announceProgress(float status) {
+        Thread t = Thread.currentThread();
+        System.out.println("Assembler #" + t.getId() + " status: " + (status * 100) + "%");
+    }
+
     @Override
     public void run() {
         int executeUntil = instructionList.size();
@@ -114,6 +119,8 @@ public class Assembler implements Runnable {
             if (!generatedInstruction) {
                 generatedInstructionList.add(nopInstructionBinaryCode);
             }
+
+            announceProgress(((float)i) / instructionList.size());
         }
     }
 }
