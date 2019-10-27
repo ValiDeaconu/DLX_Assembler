@@ -1,7 +1,6 @@
 package FileManager;
 
 public abstract class FileWriter {
-    // Singleton Design Pattern
     private java.io.BufferedWriter bufferedWriter;
     private java.io.FileWriter fileWriter;
 
