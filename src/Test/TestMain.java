@@ -6,7 +6,7 @@ import InstructionBase.InstructionAbstract;
 
 public class TestMain {
     public static void main(String[] args) {
-        String code = "minune:add r3, r4, r6\nsubf f7, f4, f9";
+        String code = "minune:add r3, r4, r6 ;comentariu rautacios\nsubf f7, f4, f9\n;nu mai vreau banane";
 
         CodeParser parser = new CodeParser(code);
         Thread t = new Thread(parser);

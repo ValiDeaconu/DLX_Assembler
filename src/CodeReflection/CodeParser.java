@@ -67,7 +67,8 @@ public class CodeParser implements Runnable {
                 return false;
             }
 
-            instructionList.add(returnInfo.instruction);
+            if (!returnInfo.messages.contains(LineParserMessages.CINSTR))
+                instructionList.add(returnInfo.instruction);
         }
 
         int totalLabelReplaced = 0;
@@ -112,6 +113,13 @@ public class CodeParser implements Runnable {
 
     private ReturnInfo<LineParserMessages> parseLine(String line, int lineIndex) {
         ReturnInfo<LineParserMessages> ret = new ReturnInfo<>();
+
+        String compressedLine = compressString(line);
+        if (compressedLine.startsWith(DataAccessConstants.COMMENT_SEPARATOR)) {
+            notifyComment(line.substring(line.indexOf(";") + 1), lineIndex);
+            ret.addMessage(LineParserMessages.CINSTR);
+            return ret;
+        }
 
         String[] terms = line.split(DataAccessConstants.INSTRUCTION_NAME_SEPARATOR);
 
@@ -165,13 +173,8 @@ public class CodeParser implements Runnable {
             ret.addError(LineParserErrors.UNKNOWN_COMMAND);
             notifyError(LineParserErrors.UNKNOWN_COMMAND, lineIndex);
             return ret;
-        }
-
-        InstructionType type = instructionInfo.getInstructionType();
-
-        if (command.startsWith(DataAccessConstants.COMMENT_SEPARATOR)) {
-            notifyComment(command.substring(1), lineIndex);
         } else {
+            InstructionType type = instructionInfo.getInstructionType();
             switch (operands.length) {
                 case 0: {
                     ret.addError(LineParserErrors.TOO_LITTLE_PARAMS);
@@ -297,10 +300,6 @@ public class CodeParser implements Runnable {
                 }
             }
         }
-
-        ret.addError(LineParserErrors.UNKNOWN_REASON);
-        notifyError(LineParserErrors.UNKNOWN_REASON, lineIndex);
-        return ret;
     }
 
     private ReturnInfo<TermParserMessages> parseTerms(String term) {
@@ -399,7 +398,7 @@ public class CodeParser implements Runnable {
     // HELPER CLASS AND METHODS
 
     private enum LineParserMessages {
-        UINSTR, BINSTR, TINSTR
+        UINSTR, BINSTR, TINSTR, CINSTR
     }
 
     private class LineParserErrors {
