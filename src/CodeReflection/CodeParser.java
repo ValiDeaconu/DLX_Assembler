@@ -6,6 +6,7 @@ import DataAccess.InstructionType;
 import InstructionBase.*;
 import OperandBase.*;
 
+import javax.xml.crypto.Data;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,12 +19,27 @@ public class CodeParser implements Runnable {
     private Map<Integer, String> instructionIdRequestLabelMap;
     private Map<String, Integer> labelToInstructionIdMap;
 
-    public CodeParser(String codeBlock) {
+    private CodeParser(String codeBlock) {
         this.codeBlock = codeBlock;
         this.state = CodeParserState.IDLE;
         this.instructionList = null;
         this.instructionIdRequestLabelMap = null;
         this.labelToInstructionIdMap = null;
+    }
+
+    // Singleton Design Pattern
+    public static CodeParser singleton;
+    public static CodeParser getInstance(String codeBlock) {
+        if (singleton == null)
+            singleton = new CodeParser(codeBlock);
+
+        singleton.codeBlock = codeBlock;
+        singleton.state = CodeParserState.IDLE;
+        singleton.instructionList = null;
+        singleton.instructionIdRequestLabelMap = null;
+        singleton.labelToInstructionIdMap = null;
+
+        return singleton;
     }
 
     public CodeParserState getState() {
@@ -339,15 +355,15 @@ public class CodeParser implements Runnable {
                 return ret;
             }
 
-            if (operandStr.startsWith("r") || operandStr.startsWith("R")) {
+            if (operandStr.startsWith(DataAccessConstants.IREG_LOWER) || operandStr.startsWith(DataAccessConstants.IREG_UPPER)) {
                 RegisterOperand operand1 = new RegisterOperand(OperandType.INTEGER_REGISTER, index);
                 ret.setOperand(operand1);
                 ret.addMessage(TermParserMessages.OPERAND_IS_IREG);
-            } else if (operandStr.startsWith("f") || operandStr.startsWith("F")) {
+            } else if (operandStr.startsWith(DataAccessConstants.FREG_LOWER) || operandStr.startsWith(DataAccessConstants.FREG_UPPER)) {
                 RegisterOperand operand1 = new RegisterOperand(OperandType.FLOAT_REGISTER, index);
                 ret.setOperand(operand1);
                 ret.addMessage(TermParserMessages.OPERAND_IS_FREG);
-            } else if (operandStr.startsWith("d") || operandStr.startsWith("D")) {
+            } else if (operandStr.startsWith(DataAccessConstants.DREG_LOWER) || operandStr.startsWith(DataAccessConstants.DREG_UPPER)) {
                 RegisterOperand operand1 = new RegisterOperand(OperandType.DOUBLE_REGISTER, index);
                 ret.setOperand(operand1);
                 ret.addMessage(TermParserMessages.OPERAND_IS_DREG);

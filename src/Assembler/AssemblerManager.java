@@ -20,8 +20,21 @@ public class AssemblerManager {
     private List<Thread> workerThreads;
     private List<Assembler> assemblers;
 
-    public AssemblerManager(InstructionList list) {
+    private AssemblerManager(InstructionList list) {
         this.instructionList = list;
+    }
+
+    // Singleton Design Pattern
+    public static AssemblerManager singleton;
+    public static AssemblerManager getInstance(InstructionList list) {
+        if (singleton == null)
+            singleton = new AssemblerManager(list);
+
+        singleton.instructionList = list;
+        singleton.workerThreads = null;
+        singleton.assemblers = null;
+
+        return singleton;
     }
 
     // TODO: Implement observers
@@ -37,14 +50,10 @@ public class AssemblerManager {
         }
     }
 
-    // TODO: This method should search into the instruction list and creates support for labels
-    public void prepareInstructionList() {
-
-    }
-
-    public void launchThreads() {
+    public void assemble() {
         // Split instructions, 128 instructions per thread.
         int threadsNeeded = (instructionList.size() >> 7) + 1;
+        assemblers = new ArrayList<>();
 
         int startIndex = 0;
         int endIndex = (1 << 7);
