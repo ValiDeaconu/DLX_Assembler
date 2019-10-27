@@ -2,7 +2,10 @@ package Test;
 
 import CodeReflection.CodeParser;
 import CodeReflection.CodeParserState;
+import FileManager.FileManager;
 import InstructionBase.InstructionAbstract;
+
+import java.io.IOException;
 
 public class TestMain {
     public static void main(String[] args) {
@@ -22,6 +25,12 @@ public class TestMain {
             for (InstructionAbstract instruction : parser.getInstructionList()) {
                 System.out.println(instruction.toString());
             }
+        }
+
+        try {
+            FileManager.getVhdlWriter().performTask("output.txt", code);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

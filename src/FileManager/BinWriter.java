@@ -2,10 +2,8 @@ package FileManager;
 
 import java.io.IOException;
 
-public class BinWriter extends FileWriter {
-    public BinWriter(String fileName, String codeBlock) throws IOException {
-        super(fileName, codeBlock);
-    }
+public final class BinWriter extends FileWriter {
+    protected BinWriter() { super(); }
 
     @Override
     public void writeHeader() throws IOException { }
