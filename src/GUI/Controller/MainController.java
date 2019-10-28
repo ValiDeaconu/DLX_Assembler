@@ -1,5 +1,6 @@
 package GUI.Controller;
 
+import GUI.Main;
 import Util.ApplicationSettings;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -9,6 +10,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -55,6 +57,7 @@ public class MainController {
     private Button build;
 
     private ApplicationSettings applicationSettings = new ApplicationSettings();
+    private Stage primaryStage;
 
     @FXML
     void aboutAction(ActionEvent event) {
@@ -101,6 +104,8 @@ public class MainController {
             stage.setTitle("Settings");
             stage.setScene(scene);
             stage.setResizable(false);
+            stage.initOwner(primaryStage);
+            stage.initModality(Modality.WINDOW_MODAL);
             stage.show();
         }
         catch (IOException e) {
@@ -120,5 +125,9 @@ public class MainController {
 
     public void setApplicationSettings(ApplicationSettings applicationSettings) {
         this.applicationSettings = applicationSettings;
+    }
+
+    public void setPrimaryStage(Stage primaryStage) {
+        this.primaryStage = primaryStage;
     }
 }

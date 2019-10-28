@@ -43,24 +43,38 @@ public class SettingsController implements Initializable {
 
     @FXML
     void saveAction(ActionEvent event) {
-        if (changeTheme == true) {
-            if (dark == true) applicationSettings.setApplicationStyle("Style/darkstyle.css");
-            else applicationSettings.setApplicationStyle("Style/lightstyle.css");
+        try{
+            if (changeTheme == true) {
+                if (dark == true) applicationSettings.setApplicationStyle("Style/darkstyle.css");
+                else applicationSettings.setApplicationStyle("Style/lightstyle.css");
+            }
+            applicationSettings.setOutputFileExtension(outputList.getValue());
+            serializer.save(applicationSettings);
+            save.setDisable(true);
         }
-        applicationSettings.setOutputFileExtension(outputList.getValue());
-        serializer.save(applicationSettings);
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
     }
 
     @FXML
     void selectDarkTheme(ActionEvent event) {
         changeTheme = true;
         dark = true;
+        save.setDisable(false);
     }
 
     @FXML
     void selectLightTheme(ActionEvent event) {
         changeTheme = true;
         dark = false;
+        save.setDisable(false);
+    }
+
+    @FXML
+    void outputChange(ActionEvent event) {
+        save.setDisable(false);
     }
 
     public void setPrimaryScene(Scene primaryScene) {
@@ -76,5 +90,6 @@ public class SettingsController implements Initializable {
         ObservableList<String> outputOptions = FXCollections.observableArrayList(".VHDL", ".bin");
         outputList.setItems(outputOptions);
         outputList.setValue(applicationSettings.getOutputFileExtension());
+        save.setDisable(true);
     }
 }
