@@ -39,7 +39,7 @@
                      </image>
                   </ImageView>
                </graphic></Button>
-            <ComboBox fx:id="outputList" layoutX="370.0" layoutY="44.0" prefWidth="200.0" />
+            <ComboBox fx:id="outputList" layoutX="370.0" layoutY="44.0" onAction="#outputChange" prefWidth="200.0" />
             <Button fx:id="save" layoutX="472.0" layoutY="360.0" mnemonicParsing="false" onAction="#saveAction" text="Save" textFill="WHITE" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0" />
             <Button fx:id="close" layoutX="470.0" layoutY="364.0" mnemonicParsing="false" onAction="#closeAction" text="Close" textFill="WHITE" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="470.0" />
             <Label fx:id="note" layoutX="40.0" layoutY="137.0" text="*NOTE: You must restart the application for the changes to take place!" textFill="#f82222" />
