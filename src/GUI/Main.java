@@ -28,6 +28,10 @@ public class Main extends Application {
         this.primaryStage.show();
     }
 
+    public void stop() {
+        controller.getExecutor().shutdown();
+    }
+
     public static void main(String[] args) {
         launch(args);
     }

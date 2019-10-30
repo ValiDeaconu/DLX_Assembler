@@ -134,3 +134,22 @@
 #note {
     -fx-text-fill: #ff1f1f;
 }
+/* CODE STYLE CSS STARTS HERE*/
+
+.keyword {
+    -fx-fill: purple;
+    -fx-font-weight: bold;
+}
+
+.paren, .colon {
+    -fx-fill: #2b51ff;
+    -fx-font-weight: bold;
+}
+
+.comment {
+	-fx-fill: #56b386;
+}
+
+.paragraph-box:has-caret {
+    -fx-background-color: #e3e3e3;
+}

@@ -401,11 +401,11 @@ public class InstructionInfo implements Comparable<InstructionInfo> {
         map.put(InstructionName.XOR, 	new InstructionInfo("XOR",	0,	26,	InstructionType.REG3IMM,	0));
         map.put(InstructionName.ADDD, 	new InstructionInfo("ADDD",	1,	0,	InstructionType.DREG3,	0));
         map.put(InstructionName.ADDF, 	new InstructionInfo("ADDF",	1,	1,	InstructionType.FREG3,	0));
-        //map.put(InstructionName.CVTD2F, 	new InstructionInfo("CVTD2F",	1,	2,	InstructionType.FD2,	0));
-        //map.put(InstructionName.CVTD2I, 	new InstructionInfo("CVTD2I",	1,	3,	InstructionType.FD2,	0));
-        //map.put(InstructionName.CVTF2D, 	new InstructionInfo("CVTF2D",	1,	4,	InstructionType.DF2,	0));
+        map.put(InstructionName.CVTD2F, 	new InstructionInfo("CVTD2F",	1,	2,	InstructionType.FD2,	0));
+        map.put(InstructionName.CVTD2I, 	new InstructionInfo("CVTD2I",	1,	3,	InstructionType.FD2,	0));
+        map.put(InstructionName.CVTF2D, 	new InstructionInfo("CVTF2D",	1,	4,	InstructionType.DF2,	0));
         map.put(InstructionName.CVTF2I, 	new InstructionInfo("CVTF2I",	1,	5,	InstructionType.FREG2a,	0));
-        //map.put(InstructionName.CVTI2D, 	new InstructionInfo("CVTI2D",	1,	6,	InstructionType.DF2,	0));
+        map.put(InstructionName.CVTI2D, 	new InstructionInfo("CVTI2D",	1,	6,	InstructionType.DF2,	0));
         map.put(InstructionName.CVTI2F, 	new InstructionInfo("CVTI2F",	1,	7,	InstructionType.FREG2a,	0));
         map.put(InstructionName.DIV, 	new InstructionInfo("DIV",	1,	8,	InstructionType.FREG3,	0));
         map.put(InstructionName.DIVD, 	new InstructionInfo("DIVD",	1,	9,	InstructionType.DREG3,	0));

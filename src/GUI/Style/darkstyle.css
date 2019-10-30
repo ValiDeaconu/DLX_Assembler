@@ -134,3 +134,35 @@
 #note {
     -fx-text-fill: #ff1f1f;
 }
+
+/* CODE STYLE CSS STARTS HERE*/
+
+.code-area .lineno{
+    -fx-background-color: #233140;
+}
+
+.code-area .lineno .text {
+    -fx-fill: #999fa8;
+}
+
+.code-area .text {
+    -fx-fill: #b5bdc9;
+}
+
+.code-area .keyword {
+    -fx-fill: #6beb26;
+    -fx-font-weight: bold;
+}
+
+.code-area .paren, .code-area .colon {
+    -fx-fill: #00a9bf;
+    -fx-font-weight: bold;
+}
+
+.code-area .comment {
+	-fx-fill: cadetblue;
+}
+
+.code-area .paragraph-box:has-caret {
+    -fx-background-color: #314861;
+}
