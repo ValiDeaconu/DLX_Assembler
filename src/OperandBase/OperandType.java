@@ -9,6 +9,5 @@ public enum OperandType {
     FLOAT,
     DOUBLE,
     NUMERIC,
-    LABEL,
-    COMMENT
+    LABEL
 }

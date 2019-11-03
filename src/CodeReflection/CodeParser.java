@@ -6,7 +6,6 @@ import DataAccess.InstructionType;
 import InstructionBase.*;
 import OperandBase.*;
 
-import javax.xml.crypto.Data;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -202,7 +201,7 @@ public class CodeParser implements Runnable {
                     ReturnInfo<TermParserMessages> returnInfo = parseTerms(operands[0]);
 
                     if (returnInfo.commentOperand != null) {
-                        notifyComment(returnInfo.commentOperand.getValue(), lineIndex);
+                        notifyComment(returnInfo.commentOperand, lineIndex);
                     }
 
                     if (returnInfo.errors.size() > 0) {
@@ -233,11 +232,11 @@ public class CodeParser implements Runnable {
                     ReturnInfo<TermParserMessages> returnInfoOp2 = parseTerms(operands[1]);
 
                     if (returnInfoOp1.commentOperand != null) {
-                        notifyComment(returnInfoOp2.commentOperand.getValue(), lineIndex);
+                        notifyComment(returnInfoOp2.commentOperand, lineIndex);
                     }
 
                     if (returnInfoOp2.commentOperand != null) {
-                        notifyComment(returnInfoOp2.commentOperand.getValue(), lineIndex);
+                        notifyComment(returnInfoOp2.commentOperand, lineIndex);
                     }
 
                     if (returnInfoOp1.errors.size() > 0 || returnInfoOp2.errors.size() > 0) {
@@ -271,15 +270,15 @@ public class CodeParser implements Runnable {
                     ReturnInfo<TermParserMessages> returnInfoOp3 = parseTerms(operands[2]);
 
                     if (returnInfoOp1.commentOperand != null) {
-                        notifyComment(returnInfoOp2.commentOperand.getValue(), lineIndex);
+                        notifyComment(returnInfoOp2.commentOperand, lineIndex);
                     }
 
                     if (returnInfoOp2.commentOperand != null) {
-                        notifyComment(returnInfoOp2.commentOperand.getValue(), lineIndex);
+                        notifyComment(returnInfoOp2.commentOperand, lineIndex);
                     }
 
                     if (returnInfoOp3.commentOperand != null) {
-                        notifyComment(returnInfoOp3.commentOperand.getValue(), lineIndex);
+                        notifyComment(returnInfoOp3.commentOperand, lineIndex);
                     }
 
                     if (returnInfoOp1.errors.size() > 0 || returnInfoOp2.errors.size() > 0 || returnInfoOp3.errors.size() > 0) {
@@ -325,15 +324,14 @@ public class CodeParser implements Runnable {
 
         if (term.contains(DataAccessConstants.COMMENT_SEPARATOR)) {
             if (term.startsWith(DataAccessConstants.COMMENT_SEPARATOR)) {
-                CommentOperand operand = new CommentOperand(term.substring(1));
+                String operand = term.substring(1);
                 ret.addMessage(TermParserMessages.OPERAND_IS_COMMENT);
                 ret.setCommentOperand(operand);
                 return ret;
             } else {
                 String comment = term.substring(term.indexOf(DataAccessConstants.COMMENT_SEPARATOR) + 1);
 
-                CommentOperand operand = new CommentOperand(comment);
-                ret.setCommentOperand(operand);
+                ret.setCommentOperand(comment);
                 ret.addMessage(TermParserMessages.OPERAND_IS_COMMENT);
 
                 operandStr = term.substring(0, term.indexOf(DataAccessConstants.COMMENT_SEPARATOR));
@@ -438,7 +436,7 @@ public class CodeParser implements Runnable {
     private static class ReturnInfo<M> {
         public InstructionAbstract instruction;
         public OperandAbstract operand;
-        public CommentOperand commentOperand;
+        public String commentOperand;
         public List<String> errors;
         public List<M>  messages;
 
@@ -454,7 +452,7 @@ public class CodeParser implements Runnable {
             this.operand = operandAbstract;
         }
 
-        public void setCommentOperand(CommentOperand commentOperand) {
+        public void setCommentOperand(String commentOperand) {
             this.commentOperand = commentOperand;
         }
 
@@ -468,12 +466,18 @@ public class CodeParser implements Runnable {
     }
 
     private boolean stringStartsWithLetter(String str) {
+        if (str == null)
+            return false;
+
         String alpha = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
         String firstCharAsString = str.substring(0, 1);
         return alpha.contains(firstCharAsString);
     }
 
     private boolean stringStartsWithNumber(String str) {
+        if (str == null)
+            return false;
+
         String numeric = "0123456789";
         String firstCharAsString = str.substring(0, 1);
         return numeric.contains(firstCharAsString);
