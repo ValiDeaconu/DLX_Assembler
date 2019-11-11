@@ -1,6 +1,6 @@
 package GUI.Controller;
 
-import Util.ApplicationSettings;
+import Misc.ApplicationSettings;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;

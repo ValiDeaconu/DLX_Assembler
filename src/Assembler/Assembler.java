@@ -6,7 +6,7 @@ import InstructionBase.InstructionList;
 import InstructionBase.UnaryInstruction;
 import OperandBase.OperandAbstract;
 import OperandBase.RegisterOperand;
-import Util.Pair;
+import Misc.Pair;
 
 import java.util.*;
 

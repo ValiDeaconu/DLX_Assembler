@@ -105,7 +105,6 @@ public enum InstructionType {
                         return false;
                     break;
                 }
-                case LABEL:
                 case UNSIGNED_INTEGER: {
                     if (!(operand instanceof UnsignedIntegerOperand))
                         return false;
@@ -131,6 +130,11 @@ public enum InstructionType {
                             operand instanceof IntegerOperand ||
                             operand instanceof FloatingOperand ||
                             operand instanceof DoubleOperand))
+                        return false;
+                    break;
+                }
+                case LABEL: {
+                    if (!(operand instanceof LabelOperand))
                         return false;
                     break;
                 }

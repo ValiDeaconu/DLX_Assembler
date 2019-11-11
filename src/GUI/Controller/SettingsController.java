@@ -1,7 +1,7 @@
 package GUI.Controller;
 
-import Util.ApplicationSerializer;
-import Util.ApplicationSettings;
+import Misc.ApplicationSerializer;
+import Misc.ApplicationSettings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;

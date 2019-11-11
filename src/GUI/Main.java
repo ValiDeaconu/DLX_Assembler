@@ -1,6 +1,6 @@
 package GUI;
 import GUI.Controller.MainController;
-import Util.ApplicationSerializer;
+import Misc.ApplicationSerializer;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;

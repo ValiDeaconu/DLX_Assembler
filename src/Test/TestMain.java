@@ -9,7 +9,14 @@ import java.io.IOException;
 
 public class TestMain {
     public static void main(String[] args) {
-        String code = "minune: add r3, r4, r6 ;comentariu rautacios\nsubf f7, f4, f9\n;nu mai vreau banane";
+        String code = "minune:\n" +
+                "                    add r3,            r4, r6;comentariu rautacios\n" +
+                "lbu r2,minune(r3)\n" +
+                "\n" +
+                "\n" +
+                "nef f3,f6\n" +
+                "snei r4,r5,#89\n" +
+                ";nu mai vreau banane";
 
         CodeParser parser = CodeParser.getInstance(code);
         Thread t = new Thread(parser);

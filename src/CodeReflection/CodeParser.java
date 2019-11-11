@@ -2,9 +2,15 @@ package CodeReflection;
 
 import DataAccess.DataAccessConstants;
 import DataAccess.InstructionInfo;
+import DataAccess.InstructionName;
 import DataAccess.InstructionType;
 import InstructionBase.*;
+import LogManager.LogManager;
+import LogManager.LogType;
 import OperandBase.*;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,12 +24,15 @@ public class CodeParser implements Runnable {
     private Map<Integer, String> instructionIdRequestLabelMap;
     private Map<String, Integer> labelToInstructionIdMap;
 
+    private LogManager logManager;
+
     private CodeParser(String codeBlock) {
         this.codeBlock = codeBlock;
         this.state = CodeParserState.IDLE;
         this.instructionList = null;
         this.instructionIdRequestLabelMap = null;
         this.labelToInstructionIdMap = null;
+        this.logManager = new LogManager(LogType.CodeParser);
     }
 
     // Singleton Design Pattern
@@ -37,6 +46,7 @@ public class CodeParser implements Runnable {
         singleton.instructionList = null;
         singleton.instructionIdRequestLabelMap = null;
         singleton.labelToInstructionIdMap = null;
+        singleton.logManager = new LogManager(LogType.CodeParser);
 
         return singleton;
     }
@@ -82,8 +92,12 @@ public class CodeParser implements Runnable {
                 return false;
             }
 
-            if (!returnInfo.messages.contains(LineParserMessages.CINSTR))
+            if (!returnInfo.messages.contains(LineParserMessages.CINSTR) &&
+                    !returnInfo.messages.contains(LineParserMessages.LINSTR) &&
+                    !returnInfo.messages.contains(LineParserMessages.NINSTR))
                 instructionList.add(returnInfo.instruction);
+            else
+                instructionList.add(new SimpleInstruction(InstructionName.NOP));
         }
 
         int totalLabelReplaced = 0;
@@ -116,205 +130,167 @@ public class CodeParser implements Runnable {
         return true;
     }
 
-    // TODO: Announce all observers that CodeParser catched an error
+    // TODO: Announce all observers that CodeParser caught an error
     private void notifyError(String message, int lineIndex) {
-        System.out.println("Error found: " + message + ", at line=" + lineIndex);
+        logManager.write("Error found: " + message + ", at line=" + lineIndex);
     }
 
     // TODO: Announce all observers that CodeParser found a comment
-    private void notifyComment(String comment, int lineIndex) {
-        System.out.println("Comment found: " + comment + ", at line=" + lineIndex);
+    private void notifyComment(String comment, int lineIndex, int commentIndex) {
+        logManager.write("Comment found: " + comment + ", at line=" + lineIndex + ", comment index=" + commentIndex);
     }
 
-    private ReturnInfo<LineParserMessages> parseLine(String line, int lineIndex) {
+    private ReturnInfo<LineParserMessages> parseLine(String rawLine, int lineIndex) {
         ReturnInfo<LineParserMessages> ret = new ReturnInfo<>();
 
-        String compressedLine = compressString(line);
-        if (compressedLine.startsWith(DataAccessConstants.COMMENT_SEPARATOR)) {
-            notifyComment(line.substring(line.indexOf(";") + 1), lineIndex);
+        String compressedLine = compressString(rawLine);
+        if (compressedLine.equals("")) {
+            logManager.write("Empty line found at lineIndex=" + lineIndex);
+            ret.addMessage(LineParserMessages.NINSTR);
+            return ret;
+        } else if (compressedLine.startsWith(DataAccessConstants.COMMENT_SEPARATOR)) {
+            int commentIndex = rawLine.indexOf(DataAccessConstants.COMMENT_SEPARATOR);
+            notifyComment(rawLine.substring(commentIndex + 1), lineIndex, commentIndex);
             ret.addMessage(LineParserMessages.CINSTR);
             return ret;
         }
 
-        String[] terms = line.split(DataAccessConstants.INSTRUCTION_NAME_SEPARATOR);
-
-        String aux = terms[0];
-        String command;
-        String[] operands;
-
-
-        if (aux.contains(DataAccessConstants.LABEL_SEPARATOR)) {
-            String label;
-            // there are 2 cases: label:instr and label: instr
-            if (aux.endsWith(DataAccessConstants.LABEL_SEPARATOR)) {
-                // label: instr, it means terms[1] = instructionName, terms[2] = operands
-                label = aux.substring(0, aux.length() - 1);
-                command = terms[1];
-
-                String rest = terms[2];
-                for (int i = 3; i < terms.length; ++i)
-                    rest = rest + terms[i];
-
-                String compressed = compressString(rest);
-                operands = compressed.split(DataAccessConstants.OPERAND_SEPARATOR);
-            } else {
-                // label:instr
-                String[] temp = terms[0].split(DataAccessConstants.LABEL_SEPARATOR);
-                label = temp[0];
-                command = temp[1];
-
-                String rest = terms[1];
-                for (int i = 2; i < terms.length; ++i)
-                    rest = rest + terms[i];
-                String compressed = compressString(rest);
-                operands = compressed.split(DataAccessConstants.OPERAND_SEPARATOR);
-            }
-
-            labelToInstructionIdMap.put(label, lineIndex);
-        } else {
-            // no label, it means terms[0] = instructionName, terms[2] = operands
-            command = terms[0];
-
-            String rest = terms[1];
-            for (int i = 2; i < terms.length; ++i)
-                rest = rest + terms[i];
-            String compressed = compressString(rest);
-            operands = compressed.split(DataAccessConstants.OPERAND_SEPARATOR);
+        String line = rawLine;
+        if (rawLine.contains(DataAccessConstants.COMMENT_SEPARATOR)) {
+            int commentIndex = rawLine.indexOf(DataAccessConstants.COMMENT_SEPARATOR);
+            line = rawLine.substring(0, commentIndex);
+            notifyComment(rawLine.substring(commentIndex + 1), lineIndex, commentIndex);
         }
 
-        InstructionInfo instructionInfo = InstructionInfo.getInstruction(command);
+        line = line.toUpperCase();
 
-        if (instructionInfo == null) {
-            ret.addError(LineParserErrors.UNKNOWN_COMMAND);
-            notifyError(LineParserErrors.UNKNOWN_COMMAND, lineIndex);
+        Pattern pattern = Pattern.compile(CodeParserConstants.LINE_REGEX);
+        Matcher matcher = pattern.matcher(line);
+
+        if (!matcher.find()) {
+            ret.addError(CodeParserConstants.LineParserErrors.SYNTAX_ERROR);
+            notifyError(CodeParserConstants.LineParserErrors.SYNTAX_ERROR, lineIndex);
             return ret;
+        }
+
+        boolean labelFound = false;
+        if (groupNotEmpty(matcher, CodeParserConstants.LABEL_WITH_DELIMITER_GROUP_ID) &&
+                groupNotEmpty(matcher, CodeParserConstants.LABEL_GROUP_ID) &&
+                matcher.group(CodeParserConstants.LABEL_WITH_DELIMITER_GROUP_ID).startsWith(matcher.group(CodeParserConstants.LABEL_GROUP_ID))) {
+            labelFound = true;
+            logManager.write("Label (" + matcher.group(CodeParserConstants.LABEL_GROUP_ID) + ") found at line=" + lineIndex);
+            labelToInstructionIdMap.put(matcher.group(CodeParserConstants.LABEL_GROUP_ID), lineIndex);
+        }
+
+        InstructionInfo instructionInfo;
+        InstructionType instructionType;
+        if (groupNotEmpty(matcher, CodeParserConstants.INSTRUCTION_NAME_GROUP_ID)) {
+            instructionInfo = InstructionInfo.getInstruction(matcher.group(CodeParserConstants.INSTRUCTION_NAME_GROUP_ID));
+
+            if (instructionInfo == null) {
+                ret.addError(CodeParserConstants.LineParserErrors.UNDEFINED_FUNCTION);
+                notifyError(CodeParserConstants.LineParserErrors.UNDEFINED_FUNCTION, lineIndex);
+                return ret;
+            } else {
+                if (instructionInfo.equals(InstructionInfo.getInstruction(InstructionName.NOP))) {
+                    ret.addMessage(LineParserMessages.NINSTR);
+                    return ret;
+                }
+                instructionType = instructionInfo.getInstructionType();
+            }
         } else {
-            InstructionType type = instructionInfo.getInstructionType();
-            switch (operands.length) {
-                case 0: {
-                    ret.addError(LineParserErrors.TOO_LITTLE_PARAMS);
-                    notifyError(LineParserErrors.TOO_LITTLE_PARAMS, lineIndex);
+            if (labelFound) {
+                ret.addMessage(LineParserMessages.LINSTR);
+                return ret;
+            } else {
+                ret.addError(CodeParserConstants.LineParserErrors.UNDEFINED_FUNCTION);
+                notifyError(CodeParserConstants.LineParserErrors.UNDEFINED_FUNCTION, lineIndex);
+                return ret;
+            }
+        }
+
+        if (groupNotEmpty(matcher, CodeParserConstants.OPERAND_1_GROUP_ID)) {
+            // first operand
+            ReturnInfo<TermParserMessages> returnInfoOp1 = parseTerms(matcher.group(CodeParserConstants.OPERAND_1_GROUP_ID));
+
+            if (returnInfoOp1.errors.size() > 0) {
+                ret.addError(CodeParserConstants.LineParserErrors.SYNTAX_ERROR);
+                notifyError(CodeParserConstants.LineParserErrors.SYNTAX_ERROR, lineIndex);
+                return ret;
+            }
+
+            if (returnInfoOp1.messages.contains(TermParserMessages.OPERAND_IS_LABEL)) {
+                instructionIdRequestLabelMap.put(lineIndex, ((LabelOperand) returnInfoOp1.operand).getValue());
+            }
+
+            if (groupNotEmpty(matcher, CodeParserConstants.OPERAND_2_GROUP_ID)) {
+                // second operand
+                ReturnInfo<TermParserMessages> returnInfoOp2 = parseTerms(matcher.group(CodeParserConstants.OPERAND_2_GROUP_ID));
+
+                if (returnInfoOp2.errors.size() > 0) {
+                    ret.addError(CodeParserConstants.LineParserErrors.SYNTAX_ERROR);
+                    notifyError(CodeParserConstants.LineParserErrors.SYNTAX_ERROR, lineIndex);
                     return ret;
                 }
-                case 1: {
-                    // unary instruction
-                    ReturnInfo<TermParserMessages> returnInfo = parseTerms(operands[0]);
 
-                    if (returnInfo.commentOperand != null) {
-                        notifyComment(returnInfo.commentOperand, lineIndex);
-                    }
+                if (returnInfoOp2.messages.contains(TermParserMessages.OPERAND_IS_LABEL)) {
+                    instructionIdRequestLabelMap.put(lineIndex, ((LabelOperand) returnInfoOp2.operand).getValue());
+                }
 
-                    if (returnInfo.errors.size() > 0) {
-                        ret.addError(LineParserErrors.INVALID_SYNTAX);
-                        notifyError(LineParserErrors.INVALID_SYNTAX, lineIndex);
+                if (groupNotEmpty(matcher, CodeParserConstants.OPERAND_3_GROUP_ID)) {
+                    // third operand
+
+                    ReturnInfo<TermParserMessages> returnInfoOp3 = parseTerms(matcher.group(CodeParserConstants.OPERAND_3_GROUP_ID));
+
+                    if (returnInfoOp3.errors.size() > 0) {
+                        ret.addError(CodeParserConstants.LineParserErrors.SYNTAX_ERROR);
+                        notifyError(CodeParserConstants.LineParserErrors.SYNTAX_ERROR, lineIndex);
                         return ret;
                     }
 
-                    if (returnInfo.messages.contains(TermParserMessages.OPERAND_IS_LABEL)) {
-                        instructionIdRequestLabelMap.put(lineIndex, ((LabelOperand) returnInfo.operand).getValue());
-                    }
-
-                    UnaryInstruction instruction = new UnaryInstruction(command, returnInfo.operand);
-
-                    if (InstructionType.testInstruction(instruction, type)) {
-                        ret.instruction = instruction;
-                        ret.addMessage(LineParserMessages.UINSTR);
-                    } else {
-                        ret.addError(LineParserErrors.INVALID_SYNTAX);
-                        notifyError(LineParserErrors.INVALID_SYNTAX, lineIndex);
-                    }
-
-                    return ret;
-                }
-                case 2: {
-                    // binary instruction
-                    ReturnInfo<TermParserMessages> returnInfoOp1 = parseTerms(operands[0]);
-                    ReturnInfo<TermParserMessages> returnInfoOp2 = parseTerms(operands[1]);
-
-                    if (returnInfoOp1.commentOperand != null) {
-                        notifyComment(returnInfoOp2.commentOperand, lineIndex);
-                    }
-
-                    if (returnInfoOp2.commentOperand != null) {
-                        notifyComment(returnInfoOp2.commentOperand, lineIndex);
-                    }
-
-                    if (returnInfoOp1.errors.size() > 0 || returnInfoOp2.errors.size() > 0) {
-                        ret.addError(LineParserErrors.INVALID_SYNTAX);
-                        notifyError(LineParserErrors.INVALID_SYNTAX, lineIndex);
-                        return ret;
-                    }
-
-                    if (returnInfoOp1.messages.contains(TermParserMessages.OPERAND_IS_LABEL)) {
-                        instructionIdRequestLabelMap.put(lineIndex, ((LabelOperand) returnInfoOp1.operand).getValue());
-                    } else if (returnInfoOp2.messages.contains(TermParserMessages.OPERAND_IS_LABEL)) {
-                        instructionIdRequestLabelMap.put(lineIndex, ((LabelOperand) returnInfoOp2.operand).getValue());
-                    }
-
-                    BinaryInstruction instruction = new BinaryInstruction(command, returnInfoOp1.operand, returnInfoOp2.operand);
-
-                    if (InstructionType.testInstruction(instruction, type)) {
-                        ret.instruction = instruction;
-                        ret.addMessage(LineParserMessages.BINSTR);
-                    } else {
-                        ret.addError(LineParserErrors.INVALID_SYNTAX);
-                        notifyError(LineParserErrors.INVALID_SYNTAX, lineIndex);
-                    }
-
-                    return ret;
-                }
-                case 3: {
-                    // ternary instruction
-                    ReturnInfo<TermParserMessages> returnInfoOp1 = parseTerms(operands[0]);
-                    ReturnInfo<TermParserMessages> returnInfoOp2 = parseTerms(operands[1]);
-                    ReturnInfo<TermParserMessages> returnInfoOp3 = parseTerms(operands[2]);
-
-                    if (returnInfoOp1.commentOperand != null) {
-                        notifyComment(returnInfoOp2.commentOperand, lineIndex);
-                    }
-
-                    if (returnInfoOp2.commentOperand != null) {
-                        notifyComment(returnInfoOp2.commentOperand, lineIndex);
-                    }
-
-                    if (returnInfoOp3.commentOperand != null) {
-                        notifyComment(returnInfoOp3.commentOperand, lineIndex);
-                    }
-
-                    if (returnInfoOp1.errors.size() > 0 || returnInfoOp2.errors.size() > 0 || returnInfoOp3.errors.size() > 0) {
-                        ret.addError(LineParserErrors.INVALID_SYNTAX);
-                        notifyError(LineParserErrors.INVALID_SYNTAX, lineIndex);
-                        return ret;
-                    }
-
-                    if (returnInfoOp1.messages.contains(TermParserMessages.OPERAND_IS_LABEL)) {
-                        instructionIdRequestLabelMap.put(lineIndex, ((LabelOperand) returnInfoOp1.operand).getValue());
-                    } else if (returnInfoOp2.messages.contains(TermParserMessages.OPERAND_IS_LABEL)) {
-                        instructionIdRequestLabelMap.put(lineIndex, ((LabelOperand) returnInfoOp2.operand).getValue());
-                    } else if (returnInfoOp3.messages.contains(TermParserMessages.OPERAND_IS_LABEL)) {
+                    if (returnInfoOp3.messages.contains(TermParserMessages.OPERAND_IS_LABEL)) {
                         instructionIdRequestLabelMap.put(lineIndex, ((LabelOperand) returnInfoOp3.operand).getValue());
                     }
 
-                    TernaryInstruction instruction = new TernaryInstruction(command, returnInfoOp1.operand, returnInfoOp2.operand, returnInfoOp3.operand);
+                    // ternary instruction
+                    TernaryInstruction instruction = new TernaryInstruction(matcher.group(CodeParserConstants.INSTRUCTION_NAME_GROUP_ID), returnInfoOp1.operand, returnInfoOp2.operand, returnInfoOp3.operand);
 
-                    if (InstructionType.testInstruction(instruction, type)) {
+                    if (InstructionType.testInstruction(instruction, instructionType)) {
                         ret.instruction = instruction;
                         ret.addMessage(LineParserMessages.TINSTR);
                     } else {
-                        ret.addError(LineParserErrors.INVALID_SYNTAX);
-                        notifyError(LineParserErrors.INVALID_SYNTAX, lineIndex);
+                        ret.addError(CodeParserConstants.LineParserErrors.SYNTAX_ERROR);
+                        notifyError(CodeParserConstants.LineParserErrors.SYNTAX_ERROR, lineIndex);
                     }
+                } else {
+                    // binary instruction
+                    BinaryInstruction instruction = new BinaryInstruction(matcher.group(CodeParserConstants.INSTRUCTION_NAME_GROUP_ID), returnInfoOp1.operand, returnInfoOp2.operand);
 
-                    return ret;
+                    if (InstructionType.testInstruction(instruction, instructionType)) {
+                        ret.instruction = instruction;
+                        ret.addMessage(LineParserMessages.BINSTR);
+                    } else {
+                        ret.addError(CodeParserConstants.LineParserErrors.SYNTAX_ERROR);
+                        notifyError(CodeParserConstants.LineParserErrors.SYNTAX_ERROR, lineIndex);
+                    }
                 }
-                case 4:
-                default: {
-                    ret.addError(LineParserErrors.TOO_MANY_PARAMS);
-                    notifyError(LineParserErrors.TOO_MANY_PARAMS, lineIndex);
-                    return ret;
+            } else {
+                // unary instruction
+                UnaryInstruction instruction = new UnaryInstruction(matcher.group(CodeParserConstants.INSTRUCTION_NAME_GROUP_ID), returnInfoOp1.operand);
+
+                if (InstructionType.testInstruction(instruction, instructionType)) {
+                    ret.instruction = instruction;
+                    ret.addMessage(LineParserMessages.UINSTR);
+                } else {
+                    ret.addError(CodeParserConstants.LineParserErrors.SYNTAX_ERROR);
+                    notifyError(CodeParserConstants.LineParserErrors.SYNTAX_ERROR, lineIndex);
                 }
             }
+        } else {
+            notifyError(CodeParserConstants.LineParserErrors.SYNTAX_ERROR, lineIndex);
+            ret.addError(CodeParserConstants.LineParserErrors.SYNTAX_ERROR);
         }
+        return ret;
     }
 
     private ReturnInfo<TermParserMessages> parseTerms(String term) {
@@ -349,7 +325,7 @@ public class CodeParser implements Runnable {
             try {
                 index = Integer.parseInt(indexStr);
             } catch (NumberFormatException e) {
-                ret.addError(TermParserErrors.INVALID_REGISTER_INDEX);
+                ret.addError(CodeParserConstants.TermParserErrors.INVALID_REGISTER_INDEX);
                 return ret;
             }
 
@@ -399,7 +375,7 @@ public class CodeParser implements Runnable {
                         ret.setOperand(operand);
                         ret.addMessage(TermParserMessages.OPERAND_IS_DOUBLE);
                     } catch (NumberFormatException eTryDouble) {
-                        ret.addError(TermParserErrors.INVALID_NUMBERIC_OPERAND);
+                        ret.addError(CodeParserConstants.TermParserErrors.INVALID_NUMBERIC_OPERAND);
                         return ret;
                     }
                 }
@@ -412,25 +388,17 @@ public class CodeParser implements Runnable {
     // HELPER CLASS AND METHODS
 
     private enum LineParserMessages {
-        UINSTR, BINSTR, TINSTR, CINSTR
-    }
-
-    private class LineParserErrors {
-        private static final String INVALID_SYNTAX = "Invalid syntax";
-        private static final String UNKNOWN_COMMAND = "Unknown command";
-        private static final String TOO_LITTLE_PARAMS = "Too little params";
-        private static final String TOO_MANY_PARAMS = "Too many params";
-        private static final String UNKNOWN_REASON = "Unknown reason";
+        UINSTR, // Unary Instruction
+        BINSTR, // Binary Instruction
+        TINSTR, // Ternary Instruction
+        CINSTR, // Comment Instruction (line with comment)
+        LINSTR, // Label Instruction (line with label)
+        NINSTR // No Instruction (empty line)
     }
 
     private enum TermParserMessages {
         OPERAND_IS_COMMENT, OPERAND_IS_IREG, OPERAND_IS_FREG, OPERAND_IS_DREG, OPERAND_IS_INT, OPERAND_IS_UINT,
         OPERAND_IS_FLOAT, OPERAND_IS_DOUBLE, OPERAND_IS_LABEL
-    }
-
-    private class TermParserErrors {
-        private static final String INVALID_REGISTER_INDEX = "Register index is not valid";
-        private static final String INVALID_NUMBERIC_OPERAND = "Numeric operand is not valid";
     }
 
     private static class ReturnInfo<M> {
@@ -485,5 +453,15 @@ public class CodeParser implements Runnable {
 
     private String compressString(String uncompressed) {
         return uncompressed.replaceAll("\\s+","");
+    }
+
+    private boolean groupNotEmpty(Matcher m, int groupIndex) {
+        try {
+            String s = m.group(groupIndex);
+            return s != null && !s.equals("");
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }
