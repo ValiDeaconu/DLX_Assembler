@@ -1,10 +1,7 @@
 package InstructionBase;
 
-import DataAccess.InstructionInfo;
-
 import DataAccess.InstructionName;
 import OperandBase.OperandAbstract;
-import OperandBase.RegisterOperand;
 
 public class BinaryInstruction extends InstructionAbstract {
 
@@ -25,10 +22,5 @@ public class BinaryInstruction extends InstructionAbstract {
     @Override
     public String toString() {
         return this.getInstructionInfo().toString() + " " + this.getDestination() + ", " + this.getOperand();
-    }
-
-    @Override
-    public String convertToBinaryCode() {
-        return null;
     }
 }

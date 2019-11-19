@@ -21,6 +21,11 @@ public class LabelOperand extends OperandAbstract<String> implements Comparable<
     }
 
     @Override
+    public String convertToBinaryCode() {
+        throw new IllegalCallerException("Label Operand should not be converted in binary.");
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;

@@ -24,7 +24,7 @@ public class Assembler implements Runnable {
     private Queue<Map.Entry<InstructionAbstract, Integer>> laterInstructions;
 
     public Assembler(InstructionList instructionList) {
-        this.instructionList = new InstructionList();
+        this.instructionList = instructionList;
         this.state = AssemblerState.IDLE;
         this.unsafeRegisters = new HashMap<>();
         this.generatedInstructionList = new LinkedList<>();
@@ -46,6 +46,8 @@ public class Assembler implements Runnable {
 
     @Override
     public void run() {
+        this.state = AssemblerState.WORKING;
+
         int executeUntil = instructionList.size();
         for (int i = 0; i < executeUntil; ++i) {
             boolean generatedInstruction = false;
@@ -122,5 +124,7 @@ public class Assembler implements Runnable {
 
             announceProgress(((float)i) / instructionList.size());
         }
+
+        this.state = AssemblerState.SUCCEEDED;
     }
 }

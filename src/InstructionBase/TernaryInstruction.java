@@ -36,9 +36,4 @@ public class TernaryInstruction extends InstructionAbstract {
                 this.getLeftOperand() + ", " +
                 this.getRightOperand();
     }
-
-    @Override
-    public String convertToBinaryCode() {
-        return null;
-    }
 }

@@ -1,5 +1,6 @@
 package InstructionBase;
 
+import DataAccess.InstructionFormat;
 import DataAccess.InstructionInfo;
 import DataAccess.InstructionName;
 
@@ -29,7 +30,9 @@ public abstract class InstructionAbstract implements Comparable<InstructionAbstr
         this.operands = new ArrayList<OperandAbstract>();
     }
 
-    public abstract String convertToBinaryCode();
+    public String convertToBinaryCode() {
+        return InstructionFormat.convertToBinaryCode(this);
+    }
 
     public InstructionInfo getInstructionInfo() {
         return instructionInfo;

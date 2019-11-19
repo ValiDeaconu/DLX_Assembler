@@ -14,4 +14,6 @@ public abstract class OperandAbstract<E> {
     public abstract E getValue();
 
     public abstract String toString();
+
+    public abstract String convertToBinaryCode();
 }

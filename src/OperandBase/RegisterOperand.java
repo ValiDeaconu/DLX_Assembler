@@ -1,5 +1,7 @@
 package OperandBase;
 
+import Util.BinaryConverter;
+
 import java.util.Objects;
 
 public class RegisterOperand extends OperandAbstract<Integer> implements Comparable<RegisterOperand> {
@@ -8,6 +10,10 @@ public class RegisterOperand extends OperandAbstract<Integer> implements Compara
 
     public RegisterOperand(OperandType registerType, int registerIndex) {
         super(registerType);
+
+        if (registerIndex < 0 || registerIndex > 31)
+            throw new IllegalArgumentException("Register Index must be between 0 and 31.");
+
         this.registerIndex = registerIndex;
 
         switch (registerType) {
@@ -53,6 +59,11 @@ public class RegisterOperand extends OperandAbstract<Integer> implements Compara
 
         assert false; // should never reach this
         return "U" + registerIndex;
+    }
+
+    @Override
+    public String convertToBinaryCode() {
+        return BinaryConverter.convertTo(Integer.toBinaryString(registerIndex), 5);
     }
 
     @Override

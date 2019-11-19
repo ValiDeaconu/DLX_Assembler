@@ -1,6 +1,7 @@
 package Assembler;
 
 import DataAccess.InstructionName;
+import InstructionBase.InstructionAbstract;
 import InstructionBase.InstructionList;
 import InstructionBase.UnaryInstruction;
 
@@ -25,7 +26,7 @@ public class AssemblerManager {
     }
 
     // Singleton Design Pattern
-    public static AssemblerManager singleton;
+    private static AssemblerManager singleton;
     public static AssemblerManager getInstance(InstructionList list) {
         if (singleton == null)
             singleton = new AssemblerManager(list);
@@ -56,11 +57,13 @@ public class AssemblerManager {
         assemblers = new ArrayList<>();
 
         int startIndex = 0;
-        int endIndex = (1 << 7);
+        int endIndex = Math.min(instructionList.size() - 1, (1 << 7));
 
         workerThreads = new ArrayList<>();
         for (int i = 0; i < threadsNeeded; ++i) {
-            InstructionList subList = (InstructionList) instructionList.subList(startIndex, endIndex);
+            List<InstructionAbstract> abstractSubList = instructionList.subList(startIndex, endIndex);
+            InstructionList subList = new InstructionList();
+            subList.addAll(abstractSubList);
 
             Assembler assembler = new Assembler(subList);
             Thread t = new Thread(assembler);

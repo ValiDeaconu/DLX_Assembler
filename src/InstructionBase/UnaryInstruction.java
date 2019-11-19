@@ -27,10 +27,4 @@ public class UnaryInstruction extends InstructionAbstract {
     public String toString() {
         return this.getInstructionInfo().toString() + " " + this.getDestination().toString();
     }
-
-    @Override
-    public String convertToBinaryCode() {
-        // TODO: Implement this method
-        return null;
-    }
 }

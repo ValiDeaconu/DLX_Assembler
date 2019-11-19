@@ -1,5 +1,7 @@
 package OperandBase;
 
+import Util.BinaryConverter;
+
 import java.util.Objects;
 
 public class IntegerOperand extends OperandAbstract<Integer> implements Comparable<IntegerOperand> {
@@ -7,11 +9,10 @@ public class IntegerOperand extends OperandAbstract<Integer> implements Comparab
 
     public IntegerOperand(int value) {
         super(OperandType.INTEGER);
-        this.value = value;
-    }
 
-    protected IntegerOperand(OperandType operandType, int value) {
-        super(operandType);
+        if (value < -32768 || value > 32767)
+            throw new IllegalArgumentException("Integer value must be between -32768 and 32767.");
+
         this.value = value;
     }
 
@@ -23,6 +24,11 @@ public class IntegerOperand extends OperandAbstract<Integer> implements Comparab
     @Override
     public String toString() {
         return String.valueOf(value);
+    }
+
+    @Override
+    public String convertToBinaryCode() {
+        return BinaryConverter.convertTo(Integer.toBinaryString(value), 16);
     }
 
     @Override

@@ -2,21 +2,16 @@ package OperandBase;
 
 import java.util.Objects;
 
-public class FloatingOperand extends OperandAbstract<Double> implements Comparable<FloatingOperand> {
-    private double value;
+public class FloatingOperand extends OperandAbstract<Float> implements Comparable<FloatingOperand> {
+    private float value;
 
-    protected FloatingOperand(OperandType operandType, double value) {
-        super(operandType);
-        this.value = value;
-    }
-
-    public FloatingOperand(double value) {
+    public FloatingOperand(float value) {
         super(OperandType.FLOAT);
         this.value = value;
     }
 
     @Override
-    public Double getValue() {
+    public Float getValue() {
         return value;
     }
 
@@ -25,6 +20,13 @@ public class FloatingOperand extends OperandAbstract<Double> implements Comparab
         return "FloatingOperand{" +
                 "value=" + value +
                 '}';
+    }
+
+    @Override
+    public String convertToBinaryCode() {
+        // TODO: Cast floating point (single precision - 32 bits into 16 bits)
+        int bits = Float.floatToIntBits(value);
+        return Integer.toBinaryString(bits);
     }
 
     @Override

@@ -20,18 +20,7 @@ public class SimpleInstruction extends InstructionAbstract {
     }
 
     @Override
-    public List<OperandAbstract> getOperandsAsList() {
-        throw new IllegalCallerException("Simple Instructions does not have any operands.");
-    }
-
-    @Override
     public String toString() {
         return this.getInstructionInfo().toString();
-    }
-
-    @Override
-    public String convertToBinaryCode() {
-        // TODO: Implement this method
-        return null;
     }
 }
