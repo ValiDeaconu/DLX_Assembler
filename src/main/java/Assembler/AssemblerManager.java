@@ -4,12 +4,13 @@ import DataAccess.InstructionName;
 import InstructionBase.InstructionAbstract;
 import InstructionBase.InstructionList;
 import InstructionBase.UnaryInstruction;
+import Util.Observable;
 import Util.Observer;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class AssemblerManager {
+public class AssemblerManager extends Observable {
     private static final int AMOUNT_OF_NOP_INSTRUCTIONS_NEEDED = 3;
 
     private static final String nopInstructionBinaryCode;
@@ -21,13 +22,11 @@ public class AssemblerManager {
     private InstructionList instructionList;
     private List<Thread> workerThreads;
     private List<Assembler> assemblers;
-    private List<Observer> observers;
     private String binaryCode;
     private ProcessState state;
 
     private AssemblerManager(InstructionList list) {
         this.instructionList = list;
-        this.observers = new ArrayList<>();
     }
 
     // Singleton Design Pattern
@@ -50,21 +49,6 @@ public class AssemblerManager {
 
     public ProcessState getAssemblerManagerState() {
         return state;
-    }
-
-    // TODO: Implement observers
-    public boolean subscribe(Observer observer) {
-        return observers.add(observer);
-    }
-
-    public boolean unsubscribe(Observer observer) {
-        return observers.remove(observer);
-    }
-
-    private void notifyObservers(String message) {
-        for (Observer observer : observers) {
-            observer.update(message);
-        }
     }
 
     public void assemble() {
@@ -98,7 +82,7 @@ public class AssemblerManager {
                 t.join();
             } catch (InterruptedException e) {
                 this.state = ProcessState.FAILED;
-                notifyObservers("Threads were interrupted.");
+                notify("Threads were interrupted.");
                 return;
             }
         }
@@ -110,11 +94,11 @@ public class AssemblerManager {
                 case IDLE:
                 case WORKING:
                     this.state = ProcessState.FAILED;
-                    notifyObservers("AssemblerManager failed.");
+                    notify("AssemblerManager failed.");
                     return;
                 case FAILED:
                     this.state = ProcessState.FAILED;
-                    notifyObservers("Worker threads failed.");
+                    notify("Worker threads failed.");
                     return;
                 case SUCCEEDED:
                     List<String> commandBlock = assembler.getResult();
@@ -135,6 +119,6 @@ public class AssemblerManager {
         // If we reach this line, it means all assemblers succeeded in their task and the result is ready
         this.state = ProcessState.SUCCEEDED;
         this.binaryCode = result;
-        notifyObservers("AssemblerManager: Code assembled.");
+        notify("AssemblerManager: Code assembled.");
     }
 }

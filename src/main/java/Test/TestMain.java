@@ -8,6 +8,7 @@ import CodeReflection.CodeParserState;
 import FileManager.FileManager;
 import InstructionBase.InstructionAbstract;
 import Util.BinaryConverter;
+import Util.Observable;
 import Util.Observer;
 
 import java.io.IOException;
@@ -18,6 +19,8 @@ public class TestMain implements Observer {
     }
 
     public static void main(String[] args) {
+        TestMain testMain = new TestMain();
+
         System.out.println(BinaryConverter.convertTo(Integer.toBinaryString(7), 5));
 
         String code = "minune:\n" +
@@ -46,6 +49,7 @@ public class TestMain implements Observer {
         }
 
         AssemblerManager assembler = AssemblerManager.getInstance(parser.getInstructionList());
+        assembler.subscribe(testMain);
         assembler.assemble();
 
         if (assembler.getAssemblerManagerState() == ProcessState.SUCCEEDED) {
@@ -67,7 +71,9 @@ public class TestMain implements Observer {
     }
 
     @Override
-    public void update(String notification) {
-        System.out.println(notification);
+    public void update(Observable observable, String notification) {
+        if (observable instanceof AssemblerManager) {
+            System.out.println(notification);
+        }
     }
 }

@@ -1,5 +1,5 @@
 package Util;
 
 public interface Observer {
-    public void update(String notification);
+    public void update(Observable observable, String notification);
 }
