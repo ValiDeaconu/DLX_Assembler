@@ -4,6 +4,7 @@ import DataAccess.InstructionName;
 import InstructionBase.InstructionAbstract;
 import InstructionBase.InstructionList;
 import InstructionBase.UnaryInstruction;
+import Util.Observer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,9 +21,13 @@ public class AssemblerManager {
     private InstructionList instructionList;
     private List<Thread> workerThreads;
     private List<Assembler> assemblers;
+    private List<Observer> observers;
+    private String binaryCode;
+    private ProcessState state;
 
     private AssemblerManager(InstructionList list) {
         this.instructionList = list;
+        this.observers = new ArrayList<>();
     }
 
     // Singleton Design Pattern
@@ -34,20 +39,31 @@ public class AssemblerManager {
         singleton.instructionList = list;
         singleton.workerThreads = null;
         singleton.assemblers = null;
+        singleton.binaryCode = null;
 
         return singleton;
     }
 
+    public String getAssembledCode() {
+        return binaryCode;
+    }
+
+    public ProcessState getAssemblerManagerState() {
+        return state;
+    }
+
     // TODO: Implement observers
-    private void notifyObservers(ProcessState state, String message) {
-        switch (state) {
-            case SUCCEEDED:
-                System.out.println("AssemblerManager: Code assembled.");
-                System.out.println(message);
-                break;
-            case FAILED:
-                System.out.println("AssemblerManager: " + message);
-                break;
+    public boolean subscribe(Observer observer) {
+        return observers.add(observer);
+    }
+
+    public boolean unsubscribe(Observer observer) {
+        return observers.remove(observer);
+    }
+
+    private void notifyObservers(String message) {
+        for (Observer observer : observers) {
+            observer.update(message);
         }
     }
 
@@ -81,7 +97,8 @@ public class AssemblerManager {
             try {
                 t.join();
             } catch (InterruptedException e) {
-                notifyObservers(ProcessState.FAILED, "Threads were interrupted.");
+                this.state = ProcessState.FAILED;
+                notifyObservers("Threads were interrupted.");
                 return;
             }
         }
@@ -92,10 +109,12 @@ public class AssemblerManager {
             switch (assembler.getState()) {
                 case IDLE:
                 case WORKING:
-                    notifyObservers(ProcessState.FAILED, "AssemblerManager failed.");
+                    this.state = ProcessState.FAILED;
+                    notifyObservers("AssemblerManager failed.");
                     return;
                 case FAILED:
-                    notifyObservers(ProcessState.FAILED, "Worker threads failed.");
+                    this.state = ProcessState.FAILED;
+                    notifyObservers("Worker threads failed.");
                     return;
                 case SUCCEEDED:
                     List<String> commandBlock = assembler.getResult();
@@ -114,6 +133,8 @@ public class AssemblerManager {
         }
 
         // If we reach this line, it means all assemblers succeeded in their task and the result is ready
-        notifyObservers(ProcessState.SUCCEEDED, result);
+        this.state = ProcessState.SUCCEEDED;
+        this.binaryCode = result;
+        notifyObservers("AssemblerManager: Code assembled.");
     }
 }
