@@ -1,6 +1,7 @@
 /.idea/
 /out/
 /output.txt
+/output.vhdl
 /settings.das
 /target/
 /logs/

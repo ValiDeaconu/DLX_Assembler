@@ -45,8 +45,8 @@ public class SettingsController implements Initializable {
     void saveAction(ActionEvent event) {
         try{
             if (changeTheme == true) {
-                if (dark == true) applicationSettings.setApplicationStyle("Style/darkstyle.css");
-                else applicationSettings.setApplicationStyle("Style/lightstyle.css");
+                if (dark == true) applicationSettings.setApplicationStyle("/Style/darkstyle.css");
+                else applicationSettings.setApplicationStyle("/Style/lightstyle.css");
             }
             applicationSettings.setOutputFileExtension(outputList.getValue());
             serializer.save(applicationSettings);

@@ -18,7 +18,7 @@ public class Main extends Application {
         this.primaryStage = primaryStage;
         controller.setApplicationSettings(serializer.load());
         controller.setPrimaryStage(this.primaryStage);
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("View/MainPage.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/View/MainPage.fxml"));
         loader.setController(controller);
         Parent root = loader.load();
         Scene scene = new Scene(root);

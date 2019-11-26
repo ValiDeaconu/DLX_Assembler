@@ -154,11 +154,11 @@ public class MainController implements Initializable {
         try {
             controller.setPrimaryScene(run.getScene());
             controller.setApplicationSettings(applicationSettings);
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("../View/SettingsPage.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/View/SettingsPage.fxml"));
             loader.setController(controller);
             Parent root = loader.load();
             Scene scene = new Scene(root);
-            scene.getStylesheets().add(getClass().getResource("../" + applicationSettings.getApplicationStyle()).toExternalForm());
+            scene.getStylesheets().add(getClass().getResource(applicationSettings.getApplicationStyle()).toExternalForm());
             Stage stage = new Stage();
             stage.setTitle("Settings");
             stage.setScene(scene);
