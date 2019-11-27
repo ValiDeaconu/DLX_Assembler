@@ -8,6 +8,7 @@ import InstructionBase.*;
 import LogManager.LogManager;
 import LogManager.LogType;
 import OperandBase.*;
+import Util.Observable;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,7 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CodeParser implements Runnable {
+public class CodeParser extends Observable implements Runnable {
     private CodeParserState state;
     private InstructionList instructionList;
     private String codeBlock;
@@ -130,14 +131,16 @@ public class CodeParser implements Runnable {
         return true;
     }
 
-    // TODO: Announce all observers that CodeParser caught an error
     private void notifyError(String message, int lineIndex) {
-        logManager.write("Error found: " + message + ", at line=" + lineIndex);
+        String notification = "Error found: " + message + ", at line=" + lineIndex;
+        logManager.write(notification);
+        notify(notification);
     }
 
-    // TODO: Announce all observers that CodeParser found a comment
     private void notifyComment(String comment, int lineIndex, int commentIndex) {
-        logManager.write("Comment found: " + comment + ", at line=" + lineIndex + ", comment index=" + commentIndex);
+        String notification = "Comment found: " + comment + ", at line=" + lineIndex + ", comment index=" + commentIndex;
+        logManager.write(notification);
+        notify(notification);
     }
 
     private ReturnInfo<LineParserMessages> parseLine(String rawLine, int lineIndex) {
@@ -361,24 +364,8 @@ public class CodeParser implements Runnable {
                     ret.addMessage(TermParserMessages.OPERAND_IS_UINT);
                 }
             } catch (NumberFormatException eTryInt) {
-                try {
-                    float floatNumber = Float.parseFloat(operandStr);
-
-                    FloatingOperand operand = new FloatingOperand(floatNumber);
-                    ret.setOperand(operand);
-                    ret.addMessage(TermParserMessages.OPERAND_IS_FLOAT);
-                } catch (NumberFormatException eTryFloat) {
-                    try {
-                        double doubleNumber = Double.parseDouble(operandStr);
-
-                        DoubleOperand operand = new DoubleOperand(doubleNumber);
-                        ret.setOperand(operand);
-                        ret.addMessage(TermParserMessages.OPERAND_IS_DOUBLE);
-                    } catch (NumberFormatException eTryDouble) {
-                        ret.addError(CodeParserConstants.TermParserErrors.INVALID_NUMBERIC_OPERAND);
-                        return ret;
-                    }
-                }
+                ret.addError(CodeParserConstants.TermParserErrors.INVALID_NUMBERIC_OPERAND);
+                return ret;
             }
         }
 
@@ -397,8 +384,8 @@ public class CodeParser implements Runnable {
     }
 
     private enum TermParserMessages {
-        OPERAND_IS_COMMENT, OPERAND_IS_IREG, OPERAND_IS_FREG, OPERAND_IS_DREG, OPERAND_IS_INT, OPERAND_IS_UINT,
-        OPERAND_IS_FLOAT, OPERAND_IS_DOUBLE, OPERAND_IS_LABEL
+        OPERAND_IS_COMMENT, OPERAND_IS_IREG, OPERAND_IS_FREG, OPERAND_IS_DREG,
+        OPERAND_IS_INT, OPERAND_IS_UINT, OPERAND_IS_LABEL
     }
 
     private static class ReturnInfo<M> {

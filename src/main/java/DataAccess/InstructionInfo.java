@@ -338,7 +338,6 @@ public class InstructionInfo implements Comparable<InstructionInfo> {
         return map;
     }
 
-    // TODO: Add SafeDepth for each instruction, according to the instruction set
     // Resource: http://users.utcluj.ro/~baruch/resources/DLX/DLX-Instruction-Set.htm
     private static Map<InstructionName, InstructionInfo> generateInstructionNameToInstructionMap()
     {

@@ -6,8 +6,6 @@ public enum OperandType {
     DOUBLE_REGISTER,
     UNSIGNED_INTEGER,
     INTEGER,
-    FLOAT,
-    DOUBLE,
     NUMERIC,
     LABEL
 }

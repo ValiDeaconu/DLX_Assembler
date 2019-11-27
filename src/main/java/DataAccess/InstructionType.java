@@ -115,21 +115,9 @@ public enum InstructionType {
                         return false;
                     break;
                 }
-                case FLOAT: {
-                    if (!(operand instanceof FloatingOperand))
-                        return false;
-                    break;
-                }
-                case DOUBLE: {
-                    if (!(operand instanceof DoubleOperand))
-                        return false;
-                    break;
-                }
                 case NUMERIC: {
                     if (!(operand instanceof UnsignedIntegerOperand ||
-                            operand instanceof IntegerOperand ||
-                            operand instanceof FloatingOperand ||
-                            operand instanceof DoubleOperand))
+                            operand instanceof IntegerOperand))
                         return false;
                     break;
                 }

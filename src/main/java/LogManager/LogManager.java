@@ -32,9 +32,6 @@ public class LogManager {
         logMessage += message;
         logMessage += "\n";
 
-        // TODO: Delete this line when it is not necessary anymore for debugging
-        System.out.print(logMessage);
-
         try {
             logWriter.write(logMessage);
         } catch (IOException e) {

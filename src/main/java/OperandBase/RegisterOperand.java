@@ -25,7 +25,7 @@ public class RegisterOperand extends OperandAbstract<Integer> implements Compara
                 break;
             case DOUBLE_REGISTER:
                 this.registerType = RegisterType.DOUBLE;
-                break;
+                 break;
             default:
                 throw new IllegalArgumentException("OperandType is not specifying a register type");
         }
