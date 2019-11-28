@@ -52,7 +52,7 @@
 
 #editor, #vhdlView, #watchesView {
     -fx-background-color: #243547;
-    -fx-text-fill: #ffff73;
+    -fx-text-fill: #ffffff;
 }
 
 #logView {

@@ -1,6 +1,14 @@
 package GUI.Controller;
 
+import Assembler.AssemblerManager;
+import Assembler.ProcessState;
+import CodeReflection.CodeParser;
+import CodeReflection.CodeParserState;
+import FileManager.FileManager;
+import InstructionBase.InstructionAbstract;
 import Util.ApplicationSettings;
+import Util.Observable;
+import Util.Observer;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -19,8 +27,12 @@ import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 import org.reactfx.Subscription;
+
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,7 +43,7 @@ import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MainController implements Initializable {
+public class MainController implements Initializable, Observer {
 
     @FXML
     private MenuItem openFile;
@@ -179,6 +191,47 @@ public class MainController implements Initializable {
 
     @FXML
     void buildAction(ActionEvent event) {
+        logView.setText("");
+        CodeParser parser = CodeParser.getInstance(editor.getText());
+        parser.subscribe(MainController.this);
+        Thread t = new Thread(parser);
+        t.start();
+
+        try {
+            t.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        if (parser.getState() == CodeParserState.SUCCEEDED) {
+            AssemblerManager assembler = AssemblerManager.getInstance(parser.getInstructionList());
+            assembler.subscribe(MainController.this);
+            assembler.assemble();
+
+            if (assembler.getAssemblerManagerState() == ProcessState.SUCCEEDED) {
+                String vhdlCode = "";
+                for (String instruction : assembler.getAssembledCode().split("\n")) {
+                    vhdlCode += "\t\"" + instruction + "\",\n";
+                }
+
+                try {
+                    if (applicationSettings.getOutputFileExtension().equals(".bin")){
+                        FileManager.getBinWriter().performTask("output.bin", vhdlCode);
+                        vhdlView.setText(new String(Files.readAllBytes(Paths.get("output.bin"))));
+                    }
+                    if (applicationSettings.getOutputFileExtension().equals(".VHDL")){
+                        FileManager.getVhdlWriter().performTask("output.vhdl", vhdlCode);
+                        vhdlView.setText(new String(Files.readAllBytes(Paths.get("output.vhdl"))));
+                    }
+                    System.out.println("File Manager worked");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    System.out.println("File Manager failed");
+                }
+            } else {
+                System.out.println("File Manager failed");
+            }
+        }
 
     }
 
@@ -229,9 +282,14 @@ public class MainController implements Initializable {
         return spansBuilder.create();
     }
 
+    private void logPrintln(String string){
+        logView.setText(logView.getText() + string + "\n");
+    }
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         outputTab.setText("output" + applicationSettings.getOutputFileExtension());
+        vhdlView.setEditable(false);
         executor = Executors.newSingleThreadExecutor();
         editor.setParagraphGraphicFactory(LineNumberFactory.get(editor));
         Subscription cleanupWhenDone = editor.multiPlainChanges()
@@ -248,5 +306,15 @@ public class MainController implements Initializable {
                 })
                 .subscribe(this::applyHighlighting);
         editor.replaceText(0, 0, sampleCode);
+    }
+
+    @Override
+    public void update(Observable observable, String notification) {
+        if (observable instanceof CodeParser) {
+            logPrintln(notification);
+        }
+        if (observable instanceof AssemblerManager) {
+            logView.setText(notification);
+        }
     }
 }

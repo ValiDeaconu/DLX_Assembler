@@ -132,15 +132,15 @@ public class CodeParser extends Observable implements Runnable {
     }
 
     private void notifyError(String message, int lineIndex) {
-        String notification = "Error found: " + message + ", at line=" + lineIndex;
+        String notification = "Error found: " + message + ", at line=" + (lineIndex + 1);
         logManager.write(notification);
         notify(notification);
     }
 
     private void notifyComment(String comment, int lineIndex, int commentIndex) {
-        String notification = "Comment found: " + comment + ", at line=" + lineIndex + ", comment index=" + commentIndex;
+        String notification = "Comment found: " + comment + ", at line=" + (lineIndex + 1) + ", comment index=" + commentIndex;
         logManager.write(notification);
-        notify(notification);
+        //notify(notification);
     }
 
     private ReturnInfo<LineParserMessages> parseLine(String rawLine, int lineIndex) {

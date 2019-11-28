@@ -57,7 +57,7 @@
 
 #logView {
     -fx-background-color: #dddddd;
-    -fx-text-fill: #ffffff;
+    -fx-text-fill: #000000;
 }
 .split-pane {
     -fx-box-border: #e3e3e3;
