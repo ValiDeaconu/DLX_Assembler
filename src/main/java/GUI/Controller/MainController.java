@@ -5,7 +5,7 @@ import Assembler.ProcessState;
 import CodeReflection.CodeParser;
 import CodeReflection.CodeParserState;
 import FileManager.FileManager;
-import InstructionBase.InstructionAbstract;
+import GUI.Main;
 import Util.ApplicationSettings;
 import Util.Observable;
 import Util.Observer;
@@ -20,6 +20,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TextArea;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.fxmisc.richtext.CodeArea;
@@ -30,6 +31,7 @@ import org.reactfx.Subscription;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -55,9 +57,6 @@ public class MainController implements Initializable, Observer {
     private MenuItem saveFile;
 
     @FXML
-    private MenuItem closeFile;
-
-    @FXML
     private MenuItem settings;
 
     @FXML
@@ -77,15 +76,6 @@ public class MainController implements Initializable, Observer {
 
     @FXML
     private Button run;
-
-    @FXML
-    private Button stop;
-
-    @FXML
-    private Button build;
-
-    @FXML
-    private Tab watchesTab;
 
     @FXML
     private Tab outputTab;
@@ -132,47 +122,12 @@ public class MainController implements Initializable, Observer {
 
     @FXML
     void aboutAction(ActionEvent event) {
-
-    }
-
-    @FXML
-    void closeFileAction(ActionEvent event) {
-
-    }
-
-    @FXML
-    void newFileAction(ActionEvent event) {
-
-    }
-
-    @FXML
-    void openFileAction(ActionEvent event) {
-
-    }
-
-    @FXML
-    void runAction(ActionEvent event) {
-
-    }
-
-    @FXML
-    void saveFileAction(ActionEvent event) {
-
-    }
-
-    @FXML
-    void settingsAction(ActionEvent event) {
-        SettingsController controller = new SettingsController();
         try {
-            controller.setPrimaryScene(run.getScene());
-            controller.setApplicationSettings(applicationSettings);
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/View/SettingsPage.fxml"));
-            loader.setController(controller);
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/View/AboutPage.fxml"));
             Parent root = loader.load();
             Scene scene = new Scene(root);
-            scene.getStylesheets().add(getClass().getResource(applicationSettings.getApplicationStyle()).toExternalForm());
             Stage stage = new Stage();
-            stage.setTitle("Settings");
+            stage.setTitle("About");
             stage.setScene(scene);
             stage.setResizable(false);
             stage.initOwner(primaryStage);
@@ -185,12 +140,52 @@ public class MainController implements Initializable, Observer {
     }
 
     @FXML
-    void stopAction(ActionEvent event) {
-
+    void newFileAction(ActionEvent event) {
+        editor.replaceText("");
     }
 
     @FXML
-    void buildAction(ActionEvent event) {
+    void openFileAction(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Open Resource File");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("All Files", "*.dlx*"));
+        File selectedFile = fileChooser.showOpenDialog(primaryStage);
+        if (selectedFile != null) {
+            try {
+                editor.replaceText(Files.readString(Paths.get(selectedFile.getPath())));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @FXML
+    void saveFileAction(ActionEvent event) {
+        File file = new File(editor.getText());
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Resource File");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("All Files", "*.dlx*"));
+        File selectedFile = fileChooser.showSaveDialog(primaryStage);
+        if (selectedFile != null) {
+            saveTextToFile(editor.getText(), selectedFile);
+        }
+    }
+
+    private void saveTextToFile(String content, File file) {
+        try {
+            PrintWriter writer;
+            writer = new PrintWriter(file);
+            writer.println(content);
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    void runAction(ActionEvent event) {
         logView.setText("");
         CodeParser parser = CodeParser.getInstance(editor.getText());
         parser.subscribe(MainController.this);
@@ -232,7 +227,30 @@ public class MainController implements Initializable, Observer {
                 System.out.println("File Manager failed");
             }
         }
+    }
 
+    @FXML
+    void settingsAction(ActionEvent event) {
+        SettingsController controller = new SettingsController();
+        try {
+            controller.setPrimaryScene(run.getScene());
+            controller.setApplicationSettings(applicationSettings);
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/View/SettingsPage.fxml"));
+            loader.setController(controller);
+            Parent root = loader.load();
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(getClass().getResource(applicationSettings.getApplicationStyle()).toExternalForm());
+            Stage stage = new Stage();
+            stage.setTitle("Settings");
+            stage.setScene(scene);
+            stage.setResizable(false);
+            stage.initOwner(primaryStage);
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.show();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void setApplicationSettings(ApplicationSettings applicationSettings) {
@@ -305,7 +323,6 @@ public class MainController implements Initializable, Observer {
                     }
                 })
                 .subscribe(this::applyHighlighting);
-        editor.replaceText(0, 0, sampleCode);
     }
 
     @Override

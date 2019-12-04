@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="300.0" prefWidth="500.0" style="-fx-background-color: #344e69;" stylesheets="@../Style/aboutstyle.css" xmlns="http://javafx.com/javafx/10.0.2" xmlns:fx="http://javafx.com/fxml/1" mouseTransparent="true">
+   <children>
+      <Label layoutX="170.0" layoutY="43.0" text="DLX Assembler" textFill="WHITE">
+         <font>
+            <Font size="21.0" />
+         </font>
+      </Label>
+      <Label layoutX="167.0" layoutY="278.0" text="Allrights reserved ©2019" textFill="WHITE" />
+      <TextArea layoutX="27.0" layoutY="105.0" prefHeight="158.0" prefWidth="473.0" text="Vestibulum eleifend orci ligula, sed posuere sapien tincidunt non. Fusce viverra tortor et ligula posuere blandit. Quisque lacinia non velit vitae bibendum. Vivamus vel vehicula quam, id condimentum sem. Cras tellus ante, eleifend vel metus sed, semper placerat purus. Mauris lobortis risus rutrum pulvinar euismod. Aliquam magna mi, vestibulum sit amet nisl id, fringilla venenatis ex. " wrapText="true" />
+   </children>
+</AnchorPane>
